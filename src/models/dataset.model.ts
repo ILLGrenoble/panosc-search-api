@@ -82,7 +82,7 @@ export class Dataset extends Model {
   @Column()
   score?: number;
 
-  @ManyToOne((type) => Document, (document) => document.datasets)
+  @ManyToOne((type) => Document)
   @JoinColumn({ name: 'documentid', referencedColumnName: 'pid' })
   document: Document;
 

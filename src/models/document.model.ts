@@ -1,6 +1,5 @@
 import { Model, model, property } from '@loopback/repository';
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
-import { Dataset } from './dataset.model';
 import { Member } from './member.model';
 import { Parameter } from './parameter.model';
 
@@ -98,16 +97,6 @@ export class Document extends Model {
     cascade: true
   })
   members: Member[];
-
-  @property({
-    type: 'array',
-    itemType: 'object'
-  })
-  @OneToMany((type) => Dataset, (dataset) => dataset.document, {
-    eager: true,
-    cascade: true
-  })
-  datasets: Dataset[];
 
   @property({
     type: 'array',
