@@ -1,6 +1,7 @@
 import { AnyObject, Command, Filter, NamedParameters, PositionalParameters, Where } from '@loopback/repository';
 import { FindManyOptions, FindOneOptions, ObjectType, Repository } from 'typeorm';
 import { TypeORMDataSource } from '../datasources';
+import { logger } from '../utils';
 import { FilterConverter } from './filter-converter';
 
 /*
@@ -8,6 +9,10 @@ import { FilterConverter } from './filter-converter';
  */
 export class BaseRepository<T extends {}, ID> {
   private _repository: Repository<T>;
+
+  private get entityAlias(): string {
+    return this._entityClass.name.toLowerCase();
+  }
 
   constructor(private _dataSource: TypeORMDataSource, private _entityClass: ObjectType<T>) {}
 
@@ -34,12 +39,13 @@ export class BaseRepository<T extends {}, ID> {
   async find(filter?: Filter<T>): Promise<T[]> {
     await this.init();
 
-    const options = new FilterConverter<T>().convertFilter(filter);
-
-    const queryBuilder = this._repository.createQueryBuilder();
+    const options = new FilterConverter<T>().convertFilter(this.entityAlias, filter);
+    const queryBuilder = this._repository.createQueryBuilder(this.entityAlias);
 
     if (options) {
       if (options.whereClause) {
+        logger.debug(`Where clause : ${options.whereClause}`);
+        logger.debug(`Where params : ${JSON.stringify(options.whereParameters)}`);
         queryBuilder.where(options.whereClause, options.whereParameters);
       }
       if (options.limit) {
@@ -93,7 +99,7 @@ export class BaseRepository<T extends {}, ID> {
   async count(where?: Where): Promise<number> {
     await this.init();
 
-    const whereQueryOptions = new FilterConverter().convertWhere(where);
+    const whereQueryOptions = new FilterConverter().convertWhere(where, this.entityAlias);
     const queryBuilder = this._repository.createQueryBuilder();
     queryBuilder.where(whereQueryOptions.whereClause, whereQueryOptions.whereParameters);
 
