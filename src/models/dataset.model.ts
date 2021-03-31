@@ -1,7 +1,6 @@
 import { Model, model, property } from '@loopback/repository';
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { Document } from './document.model';
-import { File } from './file.model';
 import { Instrument } from './instrument.model';
 import { Parameter } from './parameter.model';
 import { Sample } from './sample.model';
@@ -89,16 +88,6 @@ export class Dataset extends Model {
   @ManyToOne((type) => Instrument)
   @JoinColumn({ name: 'documentid', referencedColumnName: 'pid' })
   instrument: Instrument;
-
-  @property({
-    type: 'array',
-    itemType: 'object'
-  })
-  @OneToMany((type) => File, (file) => file.dataset, {
-    eager: true,
-    cascade: true
-  })
-  files: File[];
 
   @property({
     type: 'array',
