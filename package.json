@@ -1,0 +1,72 @@
+{
+  "name": "search-api",
+  "version": "0.0.1",
+  "description": "PaN search REST API",
+  "keywords": [
+    "loopback-application",
+    "loopback"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=10.16"
+  },
+  "scripts": {
+    "build": "lb-tsc",
+    "build:watch": "lb-tsc --watch",
+    "lint": "npm run eslint && npm run prettier:check",
+    "lint:fix": "npm run eslint:fix && npm run prettier:fix",
+    "prettier:cli": "lb-prettier \"**/*.ts\" \"**/*.js\"",
+    "prettier:check": "npm run prettier:cli -- -l",
+    "prettier:fix": "npm run prettier:cli -- --write",
+    "eslint": "lb-eslint --report-unused-disable-directives .",
+    "eslint:fix": "npm run eslint -- --fix",
+    "pretest": "npm run rebuild",
+    "test": "lb-mocha --allow-console-logs \"dist/__tests__\"",
+    "posttest": "npm run lint",
+    "test:dev": "lb-mocha --allow-console-logs dist/__tests__/**/*.js && npm run posttest",
+    "docker:build": "docker build -t search-api .",
+    "docker:run": "docker run -p 3000:3000 -d search-api",
+    "premigrate": "npm run build",
+    "migrate": "node ./dist/migrate",
+    "preopenapi-spec": "npm run build",
+    "openapi-spec": "node ./dist/openapi-spec",
+    "prestart": "npm run rebuild",
+    "start": "node -r source-map-support/register .",
+    "clean": "lb-clean dist *.tsbuildinfo .eslintcache",
+    "rebuild": "npm run clean && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "license": "",
+  "files": [
+    "README.md",
+    "dist",
+    "src",
+    "!*/__tests__"
+  ],
+  "dependencies": {
+    "@loopback/boot": "^3.3.0",
+    "@loopback/core": "^2.15.0",
+    "@loopback/repository": "^3.5.0",
+    "@loopback/rest": "^9.2.0",
+    "@loopback/rest-explorer": "^3.2.0",
+    "@loopback/service-proxy": "^3.1.0",
+    "dotenv": "^8.2.0",
+    "pg": "^8.5.1",
+    "tslib": "^2.0.0",
+    "typeorm": "^0.2.31",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@loopback/build": "^6.3.0",
+    "source-map-support": "^0.5.19",
+    "@loopback/testlab": "^3.3.0",
+    "@types/node": "^10.17.55",
+    "@loopback/eslint-config": "^10.1.0",
+    "eslint": "^7.22.0",
+    "typescript": "~4.2.3"
+  }
+}
