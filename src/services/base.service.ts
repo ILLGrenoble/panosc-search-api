@@ -1,4 +1,4 @@
-import { AnyObject, Command, NamedParameters, PositionalParameters, Where } from '@loopback/repository';
+import { AnyObject, Command, Filter, NamedParameters, PositionalParameters, Where } from '@loopback/repository';
 import { FindManyOptions } from 'typeorm';
 import { BaseRepository } from '../repositories';
 
@@ -7,6 +7,10 @@ export class BaseService<T extends { pid: string }, R extends BaseRepository<T, 
 
   getAll(): Promise<T[]> {
     return this._repository.find();
+  }
+
+  find(filter: Filter<T>): Promise<T[]> {
+    return this._repository.find(filter);
   }
 
   getById(id: string): Promise<T> {
@@ -30,7 +34,7 @@ export class BaseService<T extends { pid: string }, R extends BaseRepository<T, 
   }
 
   get(options?: FindManyOptions<T>): Promise<T[]> {
-    return this._repository.find(options);
+    return this._repository.get(options);
   }
 
   async execute(command: Command, parameters?: NamedParameters | PositionalParameters): Promise<AnyObject> {

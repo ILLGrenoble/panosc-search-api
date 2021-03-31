@@ -1,4 +1,5 @@
 import { inject } from '@loopback/core';
+import { Filter, Where } from '@loopback/filter';
 import { get, getModelSchemaRef, param } from '@loopback/rest';
 import { Instrument } from '../models';
 import { InstrumentService } from '../services';
@@ -19,8 +20,8 @@ export class InstrumentController extends BaseController {
       }
     }
   })
-  async getAllInstrument(): Promise<Instrument[]> {
-    return this._instrumentService.getAll();
+  async find(@param.filter(Instrument) filter?: Filter<Instrument>): Promise<Instrument[]> {
+    return this._instrumentService.find(filter);
   }
 
   @get('/instruments/{id}', {
@@ -47,7 +48,7 @@ export class InstrumentController extends BaseController {
       }
     }
   })
-  async countInstruments(): Promise<number> {
-    return this._instrumentService.count();
+  async count(@param.where(Instrument) where?: Where<Instrument>): Promise<number> {
+    return this._instrumentService.count(where);
   }
 }
