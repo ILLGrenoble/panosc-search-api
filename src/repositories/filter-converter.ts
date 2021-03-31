@@ -11,7 +11,11 @@ export interface WhereQueryOptions {
   isComposite?: boolean;
 }
 
-export interface QueryOptions extends PaginatedQueryOptions, WhereQueryOptions {}
+export interface OrderByQueryOptions {
+  orderBy?: { property: string; direction: 'ASC' | 'DESC' }[];
+}
+
+export interface QueryOptions extends PaginatedQueryOptions, WhereQueryOptions, OrderByQueryOptions {}
 
 export class FilterConverter<T extends {}> {
   constructor() {}
@@ -26,6 +30,8 @@ export class FilterConverter<T extends {}> {
     queryOptions = this._convertFilterPagination(filter, queryOptions);
 
     queryOptions = this._convertFilterWhere(filter.where, queryOptions);
+
+    queryOptions = this._convertFilterOrder(filter.order, queryOptions);
 
     return queryOptions;
   }
@@ -45,6 +51,37 @@ export class FilterConverter<T extends {}> {
     };
 
     return queryOptions;
+  }
+
+  _convertFilterOrder(order: string | string[], queryOptions: QueryOptions): QueryOptions {
+    const orderBys = [];
+    if (order) {
+      if (Array.isArray(order)) {
+        order.forEach((orderBy) => {
+          orderBys.push(this._convertOrderText(orderBy));
+        });
+      } else {
+        orderBys.push(this._convertOrderText(order));
+      }
+    }
+
+    return {
+      ...queryOptions,
+      orderBy: orderBys
+    };
+  }
+
+  _convertOrderText(orderBy: string) {
+    orderBy = orderBy.replace(/\s+/g, ' ').trim().toLowerCase();
+    if (orderBy.endsWith(' desc')) {
+      const property = orderBy.substr(0, orderBy.length - 4);
+      return { property: property, direction: 'DESC' };
+    } else if (orderBy.endsWith(' asc')) {
+      const property = orderBy.substr(0, orderBy.length - 4);
+      return { property: property, direction: 'ASC' };
+    } else {
+      return { property: orderBy, direction: 'ASC' };
+    }
   }
 
   convertWhere(where: any, parameters?: any): WhereQueryOptions {

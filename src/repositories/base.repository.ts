@@ -48,6 +48,15 @@ export class BaseRepository<T extends {}, ID> {
       if (options.offset) {
         queryBuilder.offset(options.offset);
       }
+      if (options.orderBy) {
+        options.orderBy.forEach((order, index) => {
+          if (index === 0) {
+            queryBuilder.orderBy(order.property, order.direction);
+          } else {
+            queryBuilder.addOrderBy(order.property, order.direction);
+          }
+        });
+      }
     }
 
     const result = await queryBuilder.getMany();
