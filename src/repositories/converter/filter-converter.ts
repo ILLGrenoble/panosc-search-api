@@ -1,4 +1,5 @@
 import { Filter } from '@loopback/filter';
+import { IncludeConverter } from './include-converter';
 import { OrderConverter } from './order-converter';
 import { PaginationConverter } from './pagination-converter';
 import { FindManyQueryOptions, FindOneQueryOptions } from './query-options';
@@ -8,10 +9,11 @@ export class FilterConverter<T extends {}> {
   private _whereConverter = new WhereConverter();
   private _orderConverter = new OrderConverter();
   private _paginationConverter = new PaginationConverter();
+  private _includeConverter = new IncludeConverter();
 
   constructor() {}
 
-  convertFindManyFilter(alias: string, filter?: Filter<T>): FindManyQueryOptions {
+  convertFindManyFilter(alias: string, aliasMap: any, filter?: Filter<T>): FindManyQueryOptions {
     if (!filter) {
       return;
     }
@@ -25,21 +27,30 @@ export class FilterConverter<T extends {}> {
     // Convert order
     const orderByQueryOptions = this._orderConverter.convert(filter.order);
 
+    // Convert include
+    const includeQueryOptions = this._includeConverter.convert(alias, aliasMap, filter.include);
+
     const queryOptions: FindManyQueryOptions = {
       ...whereQueryOptions,
       ...orderByQueryOptions,
-      ...paginatedQueryOptions
+      ...paginatedQueryOptions,
+      ...includeQueryOptions
     };
 
     return queryOptions;
   }
 
-  convertFindOneFilter(alias: string, filter?: Filter<T>): FindOneQueryOptions {
+  convertFindOneFilter(alias: string, aliasMap: any, filter?: Filter<T>): FindOneQueryOptions {
     if (!filter) {
       return;
     }
 
-    let queryOptions = {};
+    // Convert include
+    const includeQueryOptions = this._includeConverter.convert(alias, aliasMap, filter.include);
+
+    const queryOptions: FindOneQueryOptions = {
+      ...includeQueryOptions
+    };
 
     return queryOptions;
   }

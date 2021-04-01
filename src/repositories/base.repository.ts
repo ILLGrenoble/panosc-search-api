@@ -3,7 +3,7 @@ import { FindManyOptions, ObjectType, Repository } from 'typeorm';
 import { TypeORMDataSource } from '../datasources';
 import { logger } from '../utils';
 import { FilterConverter } from './converter/filter-converter';
-import {WhereConverter} from './converter/where-converter';
+import { WhereConverter } from './converter/where-converter';
 
 /*
  * Some implementation details from https://github.com/raymondfeng/loopback4-extension-repository-typeorm
@@ -27,10 +27,17 @@ export class BaseRepository<T extends {}, ID> {
   async findById(id: ID, filter?: FilterExcludingWhere<T>): Promise<T> {
     await this.init();
 
-    const options = new FilterConverter<T>().convertFindOneFilter(this.entityAlias, filter);
+    const options = new FilterConverter<T>().convertFindOneFilter(this.entityAlias, {}, filter);
 
     const queryBuilder = this._repository.createQueryBuilder(this.entityAlias);
     if (options) {
+      if (options.relationOptions) {
+        options.relationOptions.forEach((relationOption) => {
+          logger.debug(`Left join ${relationOption.property} as ${relationOption.alias}`);
+
+          queryBuilder.leftJoinAndSelect(relationOption.property, relationOption.alias);
+        });
+      }
     }
 
     const result = await queryBuilder.whereInIds(id).getOne();
@@ -40,10 +47,17 @@ export class BaseRepository<T extends {}, ID> {
   async find(filter?: Filter<T>): Promise<T[]> {
     await this.init();
 
-    const options = new FilterConverter<T>().convertFindManyFilter(this.entityAlias, filter);
+    const options = new FilterConverter<T>().convertFindManyFilter(this.entityAlias, {}, filter);
     const queryBuilder = this._repository.createQueryBuilder(this.entityAlias);
 
     if (options) {
+      if (options.relationOptions) {
+        options.relationOptions.forEach((relationOption) => {
+          logger.debug(`Left join ${relationOption.property} as ${relationOption.alias}`);
+
+          queryBuilder.leftJoinAndSelect(relationOption.property, relationOption.alias);
+        });
+      }
       if (options.whereClause) {
         logger.debug(`Where clause : ${options.whereClause}`);
         logger.debug(`Where params : ${JSON.stringify(options.whereParameters)}`);

@@ -20,7 +20,7 @@ export class InstrumentController extends BaseController {
       }
     }
   })
-  async find(@param.filter(Instrument) filter?: Filter<Instrument>): Promise<Instrument[]> {
+  async find(@param.query.object('filter') filter?: Filter<Instrument>): Promise<Instrument[]> {
     return this._instrumentService.find(filter);
   }
 
@@ -34,7 +34,7 @@ export class InstrumentController extends BaseController {
       }
     }
   })
-  async getInstrument(@param.path.string('id') id: string, @param.filter(Instrument, {exclude: 'where'}) filter?: FilterExcludingWhere<Instrument>): Promise<Instrument> {
+  async getInstrument(@param.path.string('id') id: string, @param.query.object('filter') filter?: FilterExcludingWhere<Instrument>): Promise<Instrument> {
     return this._instrumentService.findById(id, filter);
   }
 
@@ -48,7 +48,7 @@ export class InstrumentController extends BaseController {
       }
     }
   })
-  async count(@param.where(Instrument) where?: Where<Instrument>): Promise<number> {
+  async count(@param.query.object('where') where?: Where<Instrument>): Promise<number> {
     return this._instrumentService.count(where);
   }
 }

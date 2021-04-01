@@ -13,7 +13,16 @@ export interface OrderByQueryOptions {
   orderBy?: { property: string; direction: 'ASC' | 'DESC' }[];
 }
 
-export interface IncludeQueryOptions {}
+export interface RelationOptions {
+  relation: string;
+  property: string;
+  alias: string;
+  options?: FindManyQueryOptions;
+}
+
+export interface IncludeQueryOptions {
+  relationOptions?: RelationOptions[];
+}
 
 export interface FindOneQueryOptions extends IncludeQueryOptions {}
 export interface FindManyQueryOptions extends FindOneQueryOptions, PaginatedQueryOptions, WhereQueryOptions, OrderByQueryOptions {}
