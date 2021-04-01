@@ -1,106 +1,7 @@
-import { Filter, Where } from '@loopback/filter';
+import { WhereQueryOptions } from './query-options';
 
-export interface PaginatedQueryOptions {
-  limit?: number;
-  offset?: number;
-}
-
-export interface WhereQueryOptions {
-  whereClause?: string;
-  whereParameters?: any;
-  isComposite?: boolean;
-}
-
-export interface OrderByQueryOptions {
-  orderBy?: { property: string; direction: 'ASC' | 'DESC' }[];
-}
-
-export interface IncludeQueryOptions {}
-
-export interface FindOneQueryOptions extends IncludeQueryOptions {}
-export interface FindManyQueryOptions extends FindOneQueryOptions, PaginatedQueryOptions, WhereQueryOptions, OrderByQueryOptions {}
-
-export class FilterConverter<T extends {}> {
-  constructor() {}
-
-  convertFindManyFilter(alias: string, filter?: Filter<T>): FindManyQueryOptions {
-    if (!filter) {
-      return;
-    }
-
-    let queryOptions = {};
-
-    // Convert pagination
-    queryOptions = this._convertFilterPagination(filter, queryOptions);
-
-    // Convert where
-    queryOptions = this._convertFilterWhere(filter.where, alias, queryOptions);
-
-    // Convert order
-    queryOptions = this._convertFilterOrder(filter.order, queryOptions);
-
-    return queryOptions;
-  }
-
-  convertFindOneFilter(alias: string, filter?: Filter<T>): FindOneQueryOptions {
-    if (!filter) {
-      return;
-    }
-
-    let queryOptions = {};
-
-    return queryOptions;
-  }
-
-  _convertFilterPagination(filter: Filter<T>, queryOptions: FindManyQueryOptions): FindManyQueryOptions {
-    return {
-      ...queryOptions,
-      offset: filter.skip,
-      limit: filter.limit
-    };
-  }
-
-  _convertFilterWhere(where: Where<T>, alias: string, queryOptions: FindManyQueryOptions): FindManyQueryOptions {
-    queryOptions = {
-      ...queryOptions,
-      ...this.convertWhere(where, alias)
-    };
-
-    return queryOptions;
-  }
-
-  _convertFilterOrder(order: string | string[], queryOptions: FindManyQueryOptions): FindManyQueryOptions {
-    const orderBys = [];
-    if (order) {
-      if (Array.isArray(order)) {
-        order.forEach((orderBy) => {
-          orderBys.push(this._convertOrderText(orderBy));
-        });
-      } else {
-        orderBys.push(this._convertOrderText(order));
-      }
-    }
-
-    return {
-      ...queryOptions,
-      orderBy: orderBys
-    };
-  }
-
-  _convertOrderText(orderBy: string) {
-    orderBy = orderBy.replace(/\s+/g, ' ').trim().toLowerCase();
-    if (orderBy.endsWith(' desc')) {
-      const property = orderBy.substr(0, orderBy.length - 4);
-      return { property: property, direction: 'DESC' };
-    } else if (orderBy.endsWith(' asc')) {
-      const property = orderBy.substr(0, orderBy.length - 4);
-      return { property: property, direction: 'ASC' };
-    } else {
-      return { property: orderBy, direction: 'ASC' };
-    }
-  }
-
-  convertWhere(where: any, alias: string, parameters?: any): WhereQueryOptions {
+export class WhereConverter {
+  convert(where: any, alias: string, parameters?: any): WhereQueryOptions {
     function getNextParameterName(params: any): string {
       const index = Object.keys(params).length + 1;
       return `p${index}`;
@@ -111,7 +12,7 @@ export class FilterConverter<T extends {}> {
 
     if (where) {
       if (where.and) {
-        const andClauses = where.and.map((w: any) => this.convertWhere(w, alias, parameters));
+        const andClauses = where.and.map((w: any) => this.convert(w, alias, parameters));
         const and = andClauses.map((pc: WhereQueryOptions) => pc.whereClause).join(' AND ');
         clauses.push(and);
         andClauses.forEach((pc: WhereQueryOptions) => {
@@ -119,7 +20,7 @@ export class FilterConverter<T extends {}> {
         });
       }
       if (where.or) {
-        const orClauses = where.or.map((w: any) => this.convertWhere(w, alias, parameters));
+        const orClauses = where.or.map((w: any) => this.convert(w, alias, parameters));
         const or = orClauses.map((pc: WhereQueryOptions) => (pc.isComposite ? `(${pc.whereClause})` : pc.whereClause)).join(' OR ');
         clauses.push(`(${or})`);
         orClauses.forEach((pc: WhereQueryOptions) => {

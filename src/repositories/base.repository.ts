@@ -2,7 +2,8 @@ import { AnyObject, Command, Filter, FilterExcludingWhere, NamedParameters, Posi
 import { FindManyOptions, ObjectType, Repository } from 'typeorm';
 import { TypeORMDataSource } from '../datasources';
 import { logger } from '../utils';
-import { FilterConverter } from './filter-converter';
+import { FilterConverter } from './converter/filter-converter';
+import {WhereConverter} from './converter/where-converter';
 
 /*
  * Some implementation details from https://github.com/raymondfeng/loopback4-extension-repository-typeorm
@@ -72,7 +73,7 @@ export class BaseRepository<T extends {}, ID> {
   async count(where?: Where): Promise<number> {
     await this.init();
 
-    const whereQueryOptions = new FilterConverter().convertWhere(where, this.entityAlias);
+    const whereQueryOptions = new WhereConverter().convert(where, this.entityAlias);
     const queryBuilder = this._repository.createQueryBuilder();
     queryBuilder.where(whereQueryOptions.whereClause, whereQueryOptions.whereParameters);
 
