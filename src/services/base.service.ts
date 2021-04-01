@@ -1,20 +1,28 @@
-import { AnyObject, Command, Filter, NamedParameters, PositionalParameters, Where } from '@loopback/repository';
+import { AnyObject, Command, Filter, FilterExcludingWhere, NamedParameters, PositionalParameters, Where } from '@loopback/repository';
 import { FindManyOptions } from 'typeorm';
 import { BaseRepository } from '../repositories';
 
-export class BaseService<T extends { pid: string }, R extends BaseRepository<T, string>> {
+export class BaseService<T extends { pid: ID }, ID, R extends BaseRepository<T, ID>> {
   constructor(protected _repository: R) {}
 
-  getAll(): Promise<T[]> {
-    return this._repository.find();
+  findById(id: ID, filter: FilterExcludingWhere<T>): Promise<T> {
+    return this._repository.findById(id, filter);
   }
 
   find(filter: Filter<T>): Promise<T[]> {
     return this._repository.find(filter);
   }
 
-  getById(id: string): Promise<T> {
-    return this._repository.findById(id);
+  count(where?: Where): Promise<number> {
+    return this._repository.count(where);
+  }
+
+  getAll(): Promise<T[]> {
+    return this._repository.find();
+  }
+
+  getById(id: ID): Promise<T> {
+    return this._repository.getById(id);
   }
 
   save(object: T): Promise<T> {
@@ -25,11 +33,7 @@ export class BaseService<T extends { pid: string }, R extends BaseRepository<T, 
     return this._repository.deleteById(object.pid);
   }
 
-  count(where?: Where): Promise<number> {
-    return this._repository.count(where);
-  }
-
-  update(id: string, data: object): Promise<T> {
+  update(id: ID, data: object): Promise<T> {
     return this._repository.updateById(id, data);
   }
 

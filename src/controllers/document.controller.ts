@@ -1,4 +1,5 @@
 import { inject } from '@loopback/core';
+import { FilterExcludingWhere } from '@loopback/filter';
 import { get, getModelSchemaRef, param } from '@loopback/rest';
 import { Document } from '../models';
 import { DocumentService } from '../services';
@@ -19,7 +20,7 @@ export class DocumentController extends BaseController {
       }
     }
   })
-  async getDocument(@param.path.string('id') id: string): Promise<Document> {
-    return this._documentService.getById(id);
+  async getDocument(@param.path.string('id') id: string, @param.filter(Document, { exclude: 'where' }) filter?: FilterExcludingWhere<Document>): Promise<Document> {
+    return this._documentService.findById(id, filter);
   }
 }

@@ -15,12 +15,15 @@ export interface OrderByQueryOptions {
   orderBy?: { property: string; direction: 'ASC' | 'DESC' }[];
 }
 
-export interface QueryOptions extends PaginatedQueryOptions, WhereQueryOptions, OrderByQueryOptions {}
+export interface IncludeQueryOptions {}
+
+export interface FindOneQueryOptions extends IncludeQueryOptions {}
+export interface FindManyQueryOptions extends FindOneQueryOptions, PaginatedQueryOptions, WhereQueryOptions, OrderByQueryOptions {}
 
 export class FilterConverter<T extends {}> {
   constructor() {}
 
-  convertFilter(alias: string, filter?: Filter<T>): QueryOptions {
+  convertFindManyFilter(alias: string, filter?: Filter<T>): FindManyQueryOptions {
     if (!filter) {
       return;
     }
@@ -39,7 +42,17 @@ export class FilterConverter<T extends {}> {
     return queryOptions;
   }
 
-  _convertFilterPagination(filter: Filter<T>, queryOptions: QueryOptions): QueryOptions {
+  convertFindOneFilter(alias: string, filter?: Filter<T>): FindOneQueryOptions {
+    if (!filter) {
+      return;
+    }
+
+    let queryOptions = {};
+
+    return queryOptions;
+  }
+
+  _convertFilterPagination(filter: Filter<T>, queryOptions: FindManyQueryOptions): FindManyQueryOptions {
     return {
       ...queryOptions,
       offset: filter.skip,
@@ -47,7 +60,7 @@ export class FilterConverter<T extends {}> {
     };
   }
 
-  _convertFilterWhere(where: Where<T>, alias: string, queryOptions: QueryOptions): QueryOptions {
+  _convertFilterWhere(where: Where<T>, alias: string, queryOptions: FindManyQueryOptions): FindManyQueryOptions {
     queryOptions = {
       ...queryOptions,
       ...this.convertWhere(where, alias)
@@ -56,7 +69,7 @@ export class FilterConverter<T extends {}> {
     return queryOptions;
   }
 
-  _convertFilterOrder(order: string | string[], queryOptions: QueryOptions): QueryOptions {
+  _convertFilterOrder(order: string | string[], queryOptions: FindManyQueryOptions): FindManyQueryOptions {
     const orderBys = [];
     if (order) {
       if (Array.isArray(order)) {

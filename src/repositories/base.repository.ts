@@ -1,5 +1,5 @@
-import { AnyObject, Command, Filter, NamedParameters, PositionalParameters, Where } from '@loopback/repository';
-import { FindManyOptions, FindOneOptions, ObjectType, Repository } from 'typeorm';
+import { AnyObject, Command, Filter, FilterExcludingWhere, NamedParameters, PositionalParameters, Where } from '@loopback/repository';
+import { FindManyOptions, ObjectType, Repository } from 'typeorm';
 import { TypeORMDataSource } from '../datasources';
 import { logger } from '../utils';
 import { FilterConverter } from './filter-converter';
@@ -23,23 +23,23 @@ export class BaseRepository<T extends {}, ID> {
     return this._repository;
   }
 
-  async save(entity: T): Promise<T> {
-    await this.init();
-    const result = this._repository.save(entity);
-    return result;
-  }
-
-  async get(options?: FindManyOptions<T>): Promise<T[]> {
+  async findById(id: ID, filter?: FilterExcludingWhere<T>): Promise<T> {
     await this.init();
 
-    const result = await this._repository.find(options);
+    const options = new FilterConverter<T>().convertFindOneFilter(this.entityAlias, filter);
+
+    const queryBuilder = this._repository.createQueryBuilder(this.entityAlias);
+    if (options) {
+    }
+
+    const result = await queryBuilder.whereInIds(id).getOne();
     return result;
   }
 
   async find(filter?: Filter<T>): Promise<T[]> {
     await this.init();
 
-    const options = new FilterConverter<T>().convertFilter(this.entityAlias, filter);
+    const options = new FilterConverter<T>().convertFindManyFilter(this.entityAlias, filter);
     const queryBuilder = this._repository.createQueryBuilder(this.entityAlias);
 
     if (options) {
@@ -69,14 +69,31 @@ export class BaseRepository<T extends {}, ID> {
     return result;
   }
 
-  async findOne(options?: FindOneOptions<T>): Promise<T> {
+  async count(where?: Where): Promise<number> {
     await this.init();
 
-    const result = await this._repository.findOne(options);
+    const whereQueryOptions = new FilterConverter().convertWhere(where, this.entityAlias);
+    const queryBuilder = this._repository.createQueryBuilder();
+    queryBuilder.where(whereQueryOptions.whereClause, whereQueryOptions.whereParameters);
+
+    const result = queryBuilder.getCount();
     return result;
   }
 
-  async findById(id: ID): Promise<T> {
+  async save(entity: T): Promise<T> {
+    await this.init();
+    const result = this._repository.save(entity);
+    return result;
+  }
+
+  async get(options?: FindManyOptions<T>): Promise<T[]> {
+    await this.init();
+
+    const result = await this._repository.find(options);
+    return result;
+  }
+
+  async getById(id: ID): Promise<T> {
     await this.init();
     const result = await this._repository.findOne(id);
     return result;
@@ -93,18 +110,7 @@ export class BaseRepository<T extends {}, ID> {
     await this.init();
 
     await this._repository.update(id, data);
-    return this.findById(id);
-  }
-
-  async count(where?: Where): Promise<number> {
-    await this.init();
-
-    const whereQueryOptions = new FilterConverter().convertWhere(where, this.entityAlias);
-    const queryBuilder = this._repository.createQueryBuilder();
-    queryBuilder.where(whereQueryOptions.whereClause, whereQueryOptions.whereParameters);
-
-    const result = queryBuilder.getCount();
-    return result;
+    return this.getById(id);
   }
 
   async exists(id: ID): Promise<boolean> {

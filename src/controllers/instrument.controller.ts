@@ -1,5 +1,5 @@
 import { inject } from '@loopback/core';
-import { Filter, Where } from '@loopback/filter';
+import { Filter, FilterExcludingWhere, Where } from '@loopback/filter';
 import { get, getModelSchemaRef, param } from '@loopback/rest';
 import { Instrument } from '../models';
 import { InstrumentService } from '../services';
@@ -34,8 +34,8 @@ export class InstrumentController extends BaseController {
       }
     }
   })
-  async getInstrument(@param.path.string('id') id: string): Promise<Instrument> {
-    return this._instrumentService.getById(id);
+  async getInstrument(@param.path.string('id') id: string, @param.filter(Instrument, {exclude: 'where'}) filter?: FilterExcludingWhere<Instrument>): Promise<Instrument> {
+    return this._instrumentService.findById(id, filter);
   }
 
   @get('/instruments/count', {

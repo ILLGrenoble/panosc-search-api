@@ -5,7 +5,7 @@ import { DocumentRepository } from '../repositories';
 import { BaseService } from './base.service';
 
 @bind({ scope: BindingScope.SINGLETON })
-export class DocumentService extends BaseService<Document, DocumentRepository> {
+export class DocumentService extends BaseService<Document, string, DocumentRepository> {
   constructor(@repository(DocumentRepository) repo: DocumentRepository) {
     super(repo);
   }

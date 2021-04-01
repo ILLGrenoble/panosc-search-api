@@ -5,7 +5,7 @@ import { InstrumentRepository } from '../repositories';
 import { BaseService } from './base.service';
 
 @bind({ scope: BindingScope.SINGLETON })
-export class InstrumentService extends BaseService<Instrument, InstrumentRepository> {
+export class InstrumentService extends BaseService<Instrument, string, InstrumentRepository> {
   constructor(@repository(InstrumentRepository) repo: InstrumentRepository) {
     super(repo);
   }
