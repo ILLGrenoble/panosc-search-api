@@ -1,13 +1,11 @@
 import { AnyObject, Command, Filter, FilterExcludingWhere, NamedParameters, PositionalParameters, Where } from '@loopback/repository';
-import { FindManyOptions, ObjectType, Repository } from 'typeorm';
+import { FindManyOptions, ObjectType, Repository, SelectQueryBuilder } from 'typeorm';
 import { TypeORMDataSource } from '../datasources';
 import { logger } from '../utils';
 import { FilterConverter } from './converter/filter-converter';
+import { FindManyQueryOptions, RelationOptions } from './converter/query-options';
 import { WhereConverter } from './converter/where-converter';
 
-/*
- * Some implementation details from https://github.com/raymondfeng/loopback4-extension-repository-typeorm
- */
 export class BaseRepository<T extends {}, ID> {
   private _repository: Repository<T>;
 
@@ -31,16 +29,11 @@ export class BaseRepository<T extends {}, ID> {
 
     const queryBuilder = this._repository.createQueryBuilder(this.entityAlias);
     if (options) {
-      if (options.relationOptions) {
-        options.relationOptions.forEach((relationOption) => {
-          logger.debug(`Left join ${relationOption.property} as ${relationOption.alias}`);
-
-          queryBuilder.leftJoinAndSelect(relationOption.property, relationOption.alias);
-        });
-      }
+      this.constructInnerJoins(options.relationOptions, queryBuilder);
+      this.constructWhereClauses(options, queryBuilder);
     }
 
-    const result = await queryBuilder.whereInIds(id).getOne();
+    const result = await queryBuilder.andWhereInIds(id).getOne();
     return result;
   }
 
@@ -51,18 +44,8 @@ export class BaseRepository<T extends {}, ID> {
     const queryBuilder = this._repository.createQueryBuilder(this.entityAlias);
 
     if (options) {
-      if (options.relationOptions) {
-        options.relationOptions.forEach((relationOption) => {
-          logger.debug(`Left join ${relationOption.property} as ${relationOption.alias}`);
-
-          queryBuilder.leftJoinAndSelect(relationOption.property, relationOption.alias);
-        });
-      }
-      if (options.whereClause) {
-        logger.debug(`Where clause : ${options.whereClause}`);
-        logger.debug(`Where params : ${JSON.stringify(options.whereParameters)}`);
-        queryBuilder.where(options.whereClause, options.whereParameters);
-      }
+      this.constructInnerJoins(options.relationOptions, queryBuilder);
+      this.constructWhereClauses(options, queryBuilder);
       if (options.limit) {
         queryBuilder.limit(options.limit);
       }
@@ -82,6 +65,37 @@ export class BaseRepository<T extends {}, ID> {
 
     const result = await queryBuilder.getMany();
     return result;
+  }
+
+  constructInnerJoins(relationOptions: RelationOptions[], queryBuilder: SelectQueryBuilder<T>) {
+    if (relationOptions) {
+      relationOptions.forEach((relationOption) => {
+        logger.debug(`Left join ${relationOption.property} as ${relationOption.alias}`);
+
+        queryBuilder.leftJoinAndSelect(relationOption.property, relationOption.alias);
+
+        const innerOptions = relationOption.options;
+        if (innerOptions) {
+          this.constructInnerJoins(innerOptions.relationOptions, queryBuilder);
+        }
+      });
+    }
+  }
+
+  constructWhereClauses(manyOptions: FindManyQueryOptions, queryBuilder: SelectQueryBuilder<T>) {
+    if (manyOptions) {
+      if (manyOptions.whereClause) {
+        logger.debug(`Where clause : ${manyOptions.whereClause}`);
+        logger.debug(`Where params : ${JSON.stringify(manyOptions.whereParameters)}`);
+        queryBuilder.andWhere(manyOptions.whereClause, manyOptions.whereParameters);
+      }
+
+      if (manyOptions.relationOptions) {
+        manyOptions.relationOptions.forEach((innerRelationOptions) => {
+          this.constructWhereClauses(innerRelationOptions.options, queryBuilder);
+        });
+      }
+    }
   }
 
   async count(where?: Where): Promise<number> {

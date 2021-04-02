@@ -4,7 +4,7 @@ export class WhereConverter {
   convert(where: any, alias: string, parameters?: any): WhereQueryOptions {
     function getNextParameterName(params: any): string {
       const index = Object.keys(params).length + 1;
-      return `p${index}`;
+      return `${alias}_p${index}`;
     }
 
     const clauses: string[] = [];

@@ -22,11 +22,8 @@ export class IncludeConverter {
           // Recurse into the scope to include members and sub-members
           if (include.scope) {
             const scopeOptions = new FilterConverter().convertFindManyFilter(relationOptions.alias, aliasMap, include.scope);
-            if (scopeOptions.relationOptions) {
-              scopeOptions.relationOptions.forEach((scopeRelationOptions) => {
-                includeQueryOptions.relationOptions.push(scopeRelationOptions);
-              });
-            }
+
+            relationOptions.options = scopeOptions;
           }
         } else {
           logger.warn(`ignoring include filter that contains an element without a relation: ${JSON.stringify(include)}`);
@@ -46,7 +43,7 @@ export class IncludeConverter {
     if (!aliasMap[relationInitial]) {
       aliasMap[relationInitial] = 1;
     }
-    const alias = `${relationInitial}_${aliasMap[relationInitial]++}`;
+    const alias = `${relationInitial}${aliasMap[relationInitial]++}`;
 
     return {
       alias: alias,
