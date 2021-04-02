@@ -1,7 +1,7 @@
 import { WhereQueryOptions } from './query-options';
 
 export class WhereConverter {
-  convert(where: any, alias: string, parameters?: any): WhereQueryOptions {
+  convert(alias: string, where: any, parameters?: any): WhereQueryOptions {
     function getNextParameterName(params: any): string {
       const index = Object.keys(params).length + 1;
       return `${alias}_p${index}`;
@@ -12,7 +12,7 @@ export class WhereConverter {
 
     if (where) {
       if (where.and) {
-        const andClauses = where.and.map((w: any) => this.convert(w, alias, parameters));
+        const andClauses = where.and.map((w: any) => this.convert(alias, w, parameters));
         const and = andClauses.map((pc: WhereQueryOptions) => pc.whereClause).join(' AND ');
         clauses.push(and);
         andClauses.forEach((pc: WhereQueryOptions) => {
@@ -20,7 +20,7 @@ export class WhereConverter {
         });
       }
       if (where.or) {
-        const orClauses = where.or.map((w: any) => this.convert(w, alias, parameters));
+        const orClauses = where.or.map((w: any) => this.convert(alias, w, parameters));
         const or = orClauses.map((pc: WhereQueryOptions) => (pc.isComposite ? `(${pc.whereClause})` : pc.whereClause)).join(' OR ');
         clauses.push(`(${or})`);
         orClauses.forEach((pc: WhereQueryOptions) => {

@@ -22,10 +22,10 @@ export class FilterConverter<T extends {}> {
     const paginatedQueryOptions = this._paginationConverter.convert(filter);
 
     // Convert where
-    const whereQueryOptions = this._whereConverter.convert(filter.where, alias);
+    const whereQueryOptions = this._whereConverter.convert(alias, filter.where);
 
     // Convert order
-    const orderByQueryOptions = this._orderConverter.convert(filter.order);
+    const orderByQueryOptions = this._orderConverter.convert(alias, filter.order);
 
     // Convert include
     const includeQueryOptions = this._includeConverter.convert(alias, aliasMap, filter.include);

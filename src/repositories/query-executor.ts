@@ -3,7 +3,7 @@ import { SelectQueryBuilder } from 'typeorm';
 import { logger } from '../utils';
 import { FilterConverter } from './converter/filter-converter';
 import { FindManyQueryOptions, RelationOptions } from './converter/query-options';
-import {WhereConverter} from './converter/where-converter';
+import { WhereConverter } from './converter/where-converter';
 
 export class QueryExecutor<ID, T extends {}> {
   constructor(private _builder: (alias: string) => SelectQueryBuilder<T>) {}
@@ -16,6 +16,7 @@ export class QueryExecutor<ID, T extends {}> {
     if (options) {
       this._constructInnerJoins(options.relationOptions, queryBuilder);
       this._constructWhereClauses(options, queryBuilder);
+      this._constructOrderBy(options, queryBuilder);
     }
 
     const result = await queryBuilder.andWhereInIds(id).getOne();
@@ -30,21 +31,13 @@ export class QueryExecutor<ID, T extends {}> {
     if (options) {
       this._constructInnerJoins(options.relationOptions, queryBuilder);
       this._constructWhereClauses(options, queryBuilder);
+      this._constructOrderBy(options, queryBuilder);
 
       if (options.limit) {
         queryBuilder.limit(options.limit);
       }
       if (options.offset) {
         queryBuilder.offset(options.offset);
-      }
-      if (options.orderBy) {
-        options.orderBy.forEach((order, index) => {
-          if (index === 0) {
-            queryBuilder.orderBy(order.property, order.direction);
-          } else {
-            queryBuilder.addOrderBy(order.property, order.direction);
-          }
-        });
       }
     }
 
@@ -55,7 +48,7 @@ export class QueryExecutor<ID, T extends {}> {
   async count(alias: string, where?: Where): Promise<number> {
     const queryBuilder = this._builder(alias);
 
-    const whereQueryOptions = new WhereConverter().convert(where, alias);
+    const whereQueryOptions = new WhereConverter().convert(alias, where);
     queryBuilder.where(whereQueryOptions.whereClause, whereQueryOptions.whereParameters);
 
     const result = queryBuilder.getCount();
@@ -88,6 +81,22 @@ export class QueryExecutor<ID, T extends {}> {
       if (manyOptions.relationOptions) {
         manyOptions.relationOptions.forEach((innerRelationOptions) => {
           this._constructWhereClauses(innerRelationOptions.options, queryBuilder);
+        });
+      }
+    }
+  }
+
+  private _constructOrderBy(manyOptions: FindManyQueryOptions, queryBuilder: SelectQueryBuilder<T>) {
+    if (manyOptions) {
+      if (manyOptions.orderBy) {
+        manyOptions.orderBy.forEach((order) => {
+          queryBuilder.addOrderBy(`${order.alias}.${order.property}`, order.direction);
+        });
+      }
+
+      if (manyOptions.relationOptions) {
+        manyOptions.relationOptions.forEach((innerRelationOptions) => {
+          this._constructOrderBy(innerRelationOptions.options, queryBuilder);
         });
       }
     }

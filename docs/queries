@@ -1,0 +1,12 @@
+
+
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents/ILL_PROPOSAL.1-01-122' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"where": {"role": "principal_investigator"}, "include": [{"relation": "person"}, {"relation" : "affiliation"}]}}]}'
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"include": [{"relation": "person"}, {"relation" : "affiliation"}]}}]}'
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"where": {"role": "principal_investigator"}, "include": [{"relation": "person"}, {"relation" : "affiliation"}]}}]}'
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"where": {"role": "principal_investigator"}, "include": [{"relation": "person", "scope": {"where": {"id": "237674"}}}, {"relation" : "affiliation"}]}}]}'
+
+
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/instruments/count' --data-urlencode 'where={"facility": "ILL"}'
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/instruments/count' --data-urlencode 'where={"name": {"like": "D%"}, "facility": "ILL"}'
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/instruments' --data-urlencode 'filter={"where": {"name": {"like": "D%"}, "facility": "ILL"}, "order": ["name   DESC", "PID"]}'
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/instruments' --data-urlencode 'filter={"where": {"name": {"like": "D%"}}, "skip": 0, "limit": 3}'

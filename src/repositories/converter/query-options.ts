@@ -10,7 +10,7 @@ export interface WhereQueryOptions {
 }
 
 export interface OrderByQueryOptions {
-  orderBy?: { property: string; direction: 'ASC' | 'DESC' }[];
+  orderBy?: { alias:string, property: string; direction: 'ASC' | 'DESC' }[];
 }
 
 export interface RelationOptions {
