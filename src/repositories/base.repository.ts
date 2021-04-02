@@ -1,10 +1,7 @@
 import { AnyObject, Command, Filter, FilterExcludingWhere, NamedParameters, PositionalParameters, Where } from '@loopback/repository';
-import { FindManyOptions, ObjectType, Repository, SelectQueryBuilder } from 'typeorm';
+import { FindManyOptions, ObjectType, Repository } from 'typeorm';
 import { TypeORMDataSource } from '../datasources';
-import { logger } from '../utils';
-import { FilterConverter } from './converter/filter-converter';
-import { FindManyQueryOptions, RelationOptions } from './converter/query-options';
-import { WhereConverter } from './converter/where-converter';
+import { QueryExecutor } from './query-executor';
 
 export class BaseRepository<T extends {}, ID> {
   private _repository: Repository<T>;
@@ -12,6 +9,10 @@ export class BaseRepository<T extends {}, ID> {
   private get entityAlias(): string {
     return this._entityClass.name.toLowerCase();
   }
+
+  private _builder = (alias: string) => {
+    return this._repository.createQueryBuilder(alias);
+  };
 
   constructor(private _dataSource: TypeORMDataSource, private _entityClass: ObjectType<T>) {}
 
@@ -25,88 +26,19 @@ export class BaseRepository<T extends {}, ID> {
   async findById(id: ID, filter?: FilterExcludingWhere<T>): Promise<T> {
     await this.init();
 
-    const options = new FilterConverter<T>().convertFindOneFilter(this.entityAlias, {}, filter);
-
-    const queryBuilder = this._repository.createQueryBuilder(this.entityAlias);
-    if (options) {
-      this.constructInnerJoins(options.relationOptions, queryBuilder);
-      this.constructWhereClauses(options, queryBuilder);
-    }
-
-    const result = await queryBuilder.andWhereInIds(id).getOne();
-    return result;
+    return new QueryExecutor<ID, T>(this._builder).findOne(id, this.entityAlias, filter);
   }
 
   async find(filter?: Filter<T>): Promise<T[]> {
     await this.init();
 
-    const options = new FilterConverter<T>().convertFindManyFilter(this.entityAlias, {}, filter);
-    const queryBuilder = this._repository.createQueryBuilder(this.entityAlias);
-
-    if (options) {
-      this.constructInnerJoins(options.relationOptions, queryBuilder);
-      this.constructWhereClauses(options, queryBuilder);
-      if (options.limit) {
-        queryBuilder.limit(options.limit);
-      }
-      if (options.offset) {
-        queryBuilder.offset(options.offset);
-      }
-      if (options.orderBy) {
-        options.orderBy.forEach((order, index) => {
-          if (index === 0) {
-            queryBuilder.orderBy(order.property, order.direction);
-          } else {
-            queryBuilder.addOrderBy(order.property, order.direction);
-          }
-        });
-      }
-    }
-
-    const result = await queryBuilder.getMany();
-    return result;
-  }
-
-  constructInnerJoins(relationOptions: RelationOptions[], queryBuilder: SelectQueryBuilder<T>) {
-    if (relationOptions) {
-      relationOptions.forEach((relationOption) => {
-        logger.debug(`Left join ${relationOption.property} as ${relationOption.alias}`);
-
-        queryBuilder.leftJoinAndSelect(relationOption.property, relationOption.alias);
-
-        const innerOptions = relationOption.options;
-        if (innerOptions) {
-          this.constructInnerJoins(innerOptions.relationOptions, queryBuilder);
-        }
-      });
-    }
-  }
-
-  constructWhereClauses(manyOptions: FindManyQueryOptions, queryBuilder: SelectQueryBuilder<T>) {
-    if (manyOptions) {
-      if (manyOptions.whereClause) {
-        logger.debug(`Where clause : ${manyOptions.whereClause}`);
-        logger.debug(`Where params : ${JSON.stringify(manyOptions.whereParameters)}`);
-        queryBuilder.andWhere(manyOptions.whereClause, manyOptions.whereParameters);
-      }
-
-      if (manyOptions.relationOptions) {
-        manyOptions.relationOptions.forEach((innerRelationOptions) => {
-          this.constructWhereClauses(innerRelationOptions.options, queryBuilder);
-        });
-      }
-    }
+    return new QueryExecutor<ID, T>(this._builder).findMany(this.entityAlias, filter);
   }
 
   async count(where?: Where): Promise<number> {
     await this.init();
 
-    const whereQueryOptions = new WhereConverter().convert(where, this.entityAlias);
-    const queryBuilder = this._repository.createQueryBuilder();
-    queryBuilder.where(whereQueryOptions.whereClause, whereQueryOptions.whereParameters);
-
-    const result = queryBuilder.getCount();
-    return result;
+    return new QueryExecutor<ID, T>(this._builder).count(this.entityAlias, where);
   }
 
   async save(entity: T): Promise<T> {
