@@ -2,7 +2,7 @@ import { FilterExcludingWhere, Where } from '@loopback/filter';
 import { SelectQueryBuilder } from 'typeorm';
 import { logger } from '../utils';
 import { FilterConverter } from './converter/filter-converter';
-import { FindManyQueryOptions, RelationOptions } from './converter/query-options';
+import { FindManyQueryOptions, FindOneQueryOptions, RelationOptions } from './converter/query-options';
 import { WhereConverter } from './converter/where-converter';
 
 export class QueryExecutor<ID, T extends {}> {
@@ -14,12 +14,20 @@ export class QueryExecutor<ID, T extends {}> {
     const options = new FilterConverter<T>().convertFindOneFilter(alias, {}, filter);
 
     if (options) {
+      // construct the request
       this._constructInnerJoins(options.relationOptions, queryBuilder);
       this._constructWhereClauses(options, queryBuilder);
       this._constructOrderBy(options, queryBuilder);
     }
 
+    // execute the request
     const result = await queryBuilder.andWhereInIds(id).getOne();
+
+    if (options) {
+      // filter included and excluded fields
+      this._filterFields(result, options);
+    }
+
     return result;
   }
 
@@ -29,19 +37,27 @@ export class QueryExecutor<ID, T extends {}> {
     const options = new FilterConverter<T>().convertFindManyFilter(alias, {}, filter);
 
     if (options) {
+      // construct the request
       this._constructInnerJoins(options.relationOptions, queryBuilder);
       this._constructWhereClauses(options, queryBuilder);
       this._constructOrderBy(options, queryBuilder);
 
       if (options.limit) {
-        queryBuilder.limit(options.limit);
+        queryBuilder.take(options.limit);
       }
       if (options.offset) {
-        queryBuilder.offset(options.offset);
+        queryBuilder.skip(options.offset);
       }
     }
 
+    // execute the request
     const result = await queryBuilder.getMany();
+
+    if (options) {
+      // filter included and excluded fields
+      result.forEach((resultEntity) => this._filterFields(resultEntity, options));
+    }
+
     return result;
   }
 
@@ -97,6 +113,54 @@ export class QueryExecutor<ID, T extends {}> {
       if (manyOptions.relationOptions) {
         manyOptions.relationOptions.forEach((innerRelationOptions) => {
           this._constructOrderBy(innerRelationOptions.options, queryBuilder);
+        });
+      }
+    }
+  }
+
+  private _filterFields(entity: any, manyOptions?: FindOneQueryOptions) {
+    if (manyOptions) {
+      if (manyOptions.fields && manyOptions.fields.length > 0) {
+        const entityMembers = Object.getOwnPropertyNames(entity);
+
+        const falseFields = manyOptions.fields.filter((field) => field.include === false);
+
+        if (falseFields.length > 0) {
+          // Remove fields that have been explicitly excluded
+          const unselectedProperties = manyOptions.fields.map((field) => field.property);
+
+          entityMembers.forEach((entityMember) => {
+            if (unselectedProperties.includes(entityMember)) {
+              delete entity[entityMember];
+            }
+          });
+        } else {
+          // Include fields that have been explicitly included or relations that have been included
+          const selectedProperties = manyOptions.fields.map((field) => field.property);
+          const includedRelations = manyOptions.relationOptions ? manyOptions.relationOptions.map((relationOption) => relationOption.relation) : [];
+
+          entityMembers.forEach((entityMember) => {
+            if (!selectedProperties.includes(entityMember) && !includedRelations.includes(entityMember)) {
+              delete entity[entityMember];
+            }
+          });
+        }
+      }
+
+      if (manyOptions.relationOptions) {
+        // Recurse over included relations
+        manyOptions.relationOptions.forEach((innerRelationOptions) => {
+          const relation = innerRelationOptions.relation;
+          const member = entity[relation];
+          if (member) {
+            if (Array.isArray(member)) {
+              member.forEach((memberElement) => {
+                this._filterFields(memberElement, innerRelationOptions.options);
+              });
+            } else {
+              this._filterFields(member, innerRelationOptions.options);
+            }
+          }
         });
       }
     }

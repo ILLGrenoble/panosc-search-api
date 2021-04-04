@@ -24,5 +24,9 @@ export interface IncludeQueryOptions {
   relationOptions?: RelationOptions[];
 }
 
-export interface FindOneQueryOptions extends IncludeQueryOptions {}
+export interface FieldQueryOptions {
+  fields: { alias: string, property: string, include: boolean}[];
+}
+
+export interface FindOneQueryOptions extends IncludeQueryOptions, FieldQueryOptions {}
 export interface FindManyQueryOptions extends FindOneQueryOptions, PaginatedQueryOptions, WhereQueryOptions, OrderByQueryOptions {}

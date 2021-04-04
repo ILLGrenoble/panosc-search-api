@@ -1,4 +1,5 @@
 import { Filter } from '@loopback/filter';
+import {FieldConverter} from './field-converter';
 import { IncludeConverter } from './include-converter';
 import { OrderConverter } from './order-converter';
 import { PaginationConverter } from './pagination-converter';
@@ -10,6 +11,7 @@ export class FilterConverter<T extends {}> {
   private _orderConverter = new OrderConverter();
   private _paginationConverter = new PaginationConverter();
   private _includeConverter = new IncludeConverter();
+  private _fieldConverter = new FieldConverter();
 
   constructor() {}
 
@@ -30,11 +32,15 @@ export class FilterConverter<T extends {}> {
     // Convert include
     const includeQueryOptions = this._includeConverter.convert(alias, aliasMap, filter.include);
 
+    // Convert fields
+    const fieldQueryOptions = this._fieldConverter.convert(alias, filter.fields);
+
     const queryOptions: FindManyQueryOptions = {
       ...whereQueryOptions,
       ...orderByQueryOptions,
       ...paginatedQueryOptions,
-      ...includeQueryOptions
+      ...includeQueryOptions,
+      ...fieldQueryOptions
     };
 
     return queryOptions;
@@ -48,8 +54,12 @@ export class FilterConverter<T extends {}> {
     // Convert include
     const includeQueryOptions = this._includeConverter.convert(alias, aliasMap, filter.include);
 
+    // Convert fields
+    const fieldQueryOptions = this._fieldConverter.convert(alias, filter.fields);
+
     const queryOptions: FindOneQueryOptions = {
-      ...includeQueryOptions
+      ...includeQueryOptions,
+      ...fieldQueryOptions
     };
 
     return queryOptions;

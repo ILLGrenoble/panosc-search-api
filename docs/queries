@@ -1,12 +1,41 @@
 
 
+// Single document
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents/ILL_PROPOSAL.1-01-122' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"where": {"role": "principal_investigator"}, "include": [{"relation": "person"}, {"relation" : "affiliation"}]}}]}'
+
+// Selected fields of document
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents/ILL_PROPOSAL.1-01-122' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"include": [{"relation": "person", "scope": {"order": "lastName DESC"}}, {"relation" : "affiliation"}]}}], "fields": ["title"]}'
+
+// Selected fields of document (title) and person (fullName)
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents/ILL_PROPOSAL.1-01-122' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"include": [{"relation": "person", "scope": {"fields": ["fullName"],"order": "lastName DESC"}}, {"relation" : "affiliation"}]}}], "fields": ["title"]}'
+
+// Selected fields of document (title) and person (fullName) and member (role)
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents/ILL_PROPOSAL.1-01-122' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"fields": ["role"], "include": [{"relation": "person", "scope": {"fields": ["fullName"] ,"order": "lastName DESC"}}, {"relation" : "affiliation", "scope": {"fields": ["country"]}}]}}], "fields": ["title"]}'
+
+// Selected fields of document (title) and person (fullName) and member (role) and affiliation (country)
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents/ILL_PROPOSAL.1-01-122' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"fields": ["role"], "include": [{"relation": "person", "scope": {"fields": ["fullName"] ,"order": "lastName DESC"}}, {"relation" : "affiliation", "scope": {"fields": {"country": false}}}]}}], "fields": ["title"]}'
+
+// Get all documents
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"include": [{"relation": "person"}, {"relation" : "affiliation"}]}}]}'
+
+// Get all documents with only principal_investigators
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"where": {"role": "principal_investigator"}, "include": [{"relation": "person"}, {"relation" : "affiliation"}]}}]}'
+
+// Get all documents with only principal_investigators and specific person Id
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"where": {"role": "principal_investigator"}, "include": [{"relation": "person", "scope": {"where": {"id": "237674"}}}, {"relation" : "affiliation"}]}}]}'
 
+// Get all documents with only principal_investigators and specific person Id with selected fields
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"fields": ["title"], "include": [{"relation": "members", "scope": {"where": {"role": "principal_investigator"}, "include": [{"relation": "person", "scope": {"where": {"id": "237674"}, "fields": ["fullName"]}}, {"relation" : "affiliation"}]}}]}'
 
+// Count all instruments from the ILL
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/instruments/count' --data-urlencode 'where={"facility": "ILL"}'
+
+// Count all instruments from the ILL beginning with D
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/instruments/count' --data-urlencode 'where={"name": {"like": "D%"}, "facility": "ILL"}'
+
+// Get all instruments from the ILL ordered by name
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/instruments' --data-urlencode 'filter={"where": {"name": {"like": "D%"}, "facility": "ILL"}, "order": ["name   DESC", "PID"]}'
+
+// Get first 3 instruments beginning with D
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/instruments' --data-urlencode 'filter={"where": {"name": {"like": "D%"}}, "skip": 0, "limit": 3}'
+
