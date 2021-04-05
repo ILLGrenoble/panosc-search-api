@@ -81,12 +81,18 @@ export class Dataset extends Model {
   @Column()
   score?: number;
 
+  @property({
+    type: 'object'
+  })
   @ManyToOne((type) => Document)
   @JoinColumn({ name: 'documentid', referencedColumnName: 'pid' })
   document: Document;
 
+  @property({
+    type: 'object'
+  })
   @ManyToOne((type) => Instrument)
-  @JoinColumn({ name: 'documentid', referencedColumnName: 'pid' })
+  @JoinColumn({ name: 'instrumentid', referencedColumnName: 'pid' })
   instrument: Instrument;
 
   @property({

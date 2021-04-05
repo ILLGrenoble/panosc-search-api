@@ -15,7 +15,7 @@ curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/do
 // Selected fields of document (title) and person (fullName) and member (role) and affiliation (country)
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents/ILL_PROPOSAL.1-01-122' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"fields": ["role"], "include": [{"relation": "person", "scope": {"fields": ["fullName"] ,"order": "lastName DESC"}}, {"relation" : "affiliation", "scope": {"fields": {"country": false}}}]}}], "fields": ["title"]}'
 
-// Get all documents
+// Get all documents including members, persons and affiliations
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"include": [{"relation": "person"}, {"relation" : "affiliation"}]}}]}'
 
 // Get all documents with only principal_investigators
@@ -39,3 +39,6 @@ curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/in
 // Get first 3 instruments beginning with D
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/instruments' --data-urlencode 'filter={"where": {"name": {"like": "D%"}}, "skip": 0, "limit": 3}'
 
+
+// Get all datasets
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/datasets' --data-urlencode 'filter={"limit": 10, "include": [{"relation": "document"}]}'
