@@ -1,3 +1,4 @@
+export * from './account-token.model';
 export * from './dataset.model';
 export * from './document.model';
 export * from './instrument.model';

@@ -1,7 +1,8 @@
 import { inject } from '@loopback/core';
 import { Filter, FilterExcludingWhere, Where } from '@loopback/filter';
 import { get, getModelSchemaRef, param } from '@loopback/rest';
-import { Document } from '../models';
+import { AuthentiationComponent } from '../components';
+import { AccountToken, Document } from '../models';
 import { DocumentService } from '../services';
 import { BaseController } from './base.controller';
 
@@ -20,7 +21,7 @@ export class DocumentController extends BaseController {
       }
     }
   })
-  async find(@param.query.object('filter') filter?: Filter<Document>): Promise<Document[]> {
+  async find(@inject(AuthentiationComponent.ACCOUNT_TOKEN) _accountToken: AccountToken, @param.query.object('filter') filter?: Filter<Document>): Promise<Document[]> {
     return this._documentService.find(filter);
   }
 

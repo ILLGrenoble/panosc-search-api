@@ -15,6 +15,12 @@ export class ApplicationConfig {
     level: string;
   };
 
+  idp: {
+    url: string;
+    clientId: string;
+    userIdClaimKey: string;
+  };
+
   constructor(data?: Partial<ApplicationConfig>) {
     Object.assign(this, data);
   }
@@ -38,6 +44,11 @@ export function APPLICATION_CONFIG(): ApplicationConfig {
       },
       logging: {
         level: process.env.SEARCH_API_LOG_LEVEL
+      },
+      idp: {
+        url: process.env.SEARCH_API_OIDC_URL,
+        clientId: process.env.SEARCH_API_LOG_LEVEL,
+        userIdClaimKey: process.env.SEARCH_API_OIDC_USER_ID_CLAIM_KEY
       }
     };
   }
