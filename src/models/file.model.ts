@@ -22,13 +22,13 @@ export class File extends Model {
   @property({
     type: 'string'
   })
-  @Column()
+  @Column({ nullable: true })
   path?: string;
 
   @property({
     type: 'number'
   })
-  @Column()
+  @Column({ nullable: true })
   size?: number;
 
   @ManyToOne((type) => Dataset)

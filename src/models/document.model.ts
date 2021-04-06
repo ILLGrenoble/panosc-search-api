@@ -1,5 +1,6 @@
 import { Model, model, property } from '@loopback/repository';
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { Dataset } from './dataset.model';
 import { Member } from './member.model';
 import { Parameter } from './parameter.model';
 
@@ -37,37 +38,37 @@ export class Document extends Model {
   @property({
     type: 'string'
   })
-  @Column()
+  @Column({ nullable: true })
   summary?: string;
 
   @property({
     type: 'string'
   })
-  @Column()
+  @Column({ nullable: true })
   doi?: string;
 
   @property({
     type: 'date'
   })
-  @Column({ name: 'startdate' })
+  @Column({ name: 'startdate', nullable: true })
   startDate?: string;
 
   @property({
     type: 'date'
   })
-  @Column({ name: 'enddate' })
+  @Column({ name: 'enddate', nullable: true })
   endDate?: string;
 
   @property({
     type: 'date'
   })
-  @Column({ name: 'releasedate' })
+  @Column({ name: 'releasedate', nullable: true })
   releaseDate?: string;
 
   @property({
     type: 'string'
   })
-  @Column()
+  @Column({ nullable: true })
   license?: string;
 
   @property.array(String, {})
@@ -79,14 +80,24 @@ export class Document extends Model {
     required: true,
     hidden: true
   })
-  @Column({ type: 'text', array: true, nullable: false })
+  @Column({ type: 'text', array: true, nullable: true })
   acls: string[];
 
   @property({
     type: 'number'
   })
-  @Column()
+  @Column({ nullable: true })
   score?: number;
+
+  @property({
+    type: 'array',
+    itemType: 'object'
+  })
+  @OneToMany((type) => Dataset, (dataset) => dataset.document, {
+    eager: true,
+    cascade: true
+  })
+  datasets: Dataset[];
 
   @property({
     type: 'array',

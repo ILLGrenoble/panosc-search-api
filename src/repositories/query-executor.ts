@@ -1,9 +1,7 @@
 import { FilterExcludingWhere, Where } from '@loopback/filter';
 import { SelectQueryBuilder } from 'typeorm';
 import { logger } from '../utils';
-import { FilterConverter } from './converter/filter-converter';
-import { FindManyQueryOptions, FindOneQueryOptions, RelationOptions } from './converter/query-options';
-import { WhereConverter } from './converter/where-converter';
+import { FilterConverter, FindManyQueryOptions, FindOneQueryOptions, RelationOptions, WhereConverter } from './converter';
 
 export class QueryExecutor<ID, T extends {}> {
   constructor(private _builder: (alias: string) => SelectQueryBuilder<T>) {}
@@ -119,6 +117,9 @@ export class QueryExecutor<ID, T extends {}> {
   }
 
   private _filterFields(entity: any, manyOptions?: FindOneQueryOptions) {
+
+    //getConnection().getMetadata(Organization).ownColumns.map(column => column.propertyName)
+
     if (manyOptions) {
       if (manyOptions.fields && manyOptions.fields.length > 0) {
         const entityMembers = Object.getOwnPropertyNames(entity);

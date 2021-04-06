@@ -21,25 +21,25 @@ export class Person extends Model {
   @property({
     type: 'string'
   })
-  @Column()
+  @Column({ nullable: true })
   orcid?: string;
 
   @property({
     type: 'string'
   })
-  @Column({ name: 'researcherid' })
+  @Column({ name: 'researcherid', nullable: true })
   researcherId?: string;
 
   @property({
     type: 'string'
   })
-  @Column({ name: 'firstname' })
+  @Column({ name: 'firstname', nullable: true })
   firstName?: string;
 
   @property({
     type: 'string'
   })
-  @Column({ name: 'lastname' })
+  @Column({ name: 'lastname', nullable: true })
   lastName?: string;
 
   constructor(data?: Partial<Person>) {

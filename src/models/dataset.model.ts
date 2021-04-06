@@ -1,6 +1,7 @@
 import { Model, model, property } from '@loopback/repository';
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { Document } from './document.model';
+import { File } from './file.model';
 import { Instrument } from './instrument.model';
 import { Parameter } from './parameter.model';
 import { Sample } from './sample.model';
@@ -34,14 +35,14 @@ export class Dataset extends Model {
     type: 'number',
     required: true
   })
-  @Column()
+  @Column({ nullable: true })
   size?: number;
 
   @property({
     type: 'date',
     required: true
   })
-  @Column({ name: 'creationdate' })
+  @Column({ name: 'creationdate', nullable: true })
   creationDate?: string;
 
   @property({
@@ -49,7 +50,7 @@ export class Dataset extends Model {
     required: true,
     hidden: true
   })
-  @Column({ name: 'firstfilenumor', nullable: false })
+  @Column({ name: 'firstfilenumor', nullable: true })
   firstFileNumor: number;
 
   @property({
@@ -57,7 +58,7 @@ export class Dataset extends Model {
     required: true,
     hidden: true
   })
-  @Column({ name: 'lastfilenumor', nullable: false })
+  @Column({ name: 'lastfilenumor', nullable: true })
   lastFileNumor: number;
 
   @property({
@@ -65,20 +66,20 @@ export class Dataset extends Model {
     required: true,
     hidden: true
   })
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   path: string;
 
   @property.array(String, {
     required: true,
     hidden: true
   })
-  @Column({ type: 'text', array: true, nullable: false })
+  @Column({ type: 'text', array: true, nullable: true })
   acls: string[];
 
   @property({
     type: 'number'
   })
-  @Column()
+  @Column({ nullable: true })
   score?: number;
 
   @property({
@@ -104,6 +105,16 @@ export class Dataset extends Model {
     cascade: true
   })
   parameters: Parameter[];
+
+  @property({
+    type: 'array',
+    itemType: 'object'
+  })
+  @OneToMany((type) => File, (file) => file.dataset, {
+    eager: true,
+    cascade: true
+  })
+  files: File[];
 
   @property({
     type: 'array',

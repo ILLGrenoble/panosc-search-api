@@ -29,7 +29,7 @@ export class Parameter extends Model {
   @property({
     type: 'string'
   })
-  @Column()
+  @Column({ nullable: true })
   unit?: string;
 
   @ManyToOne((type) => Document, (document) => document.parameters)

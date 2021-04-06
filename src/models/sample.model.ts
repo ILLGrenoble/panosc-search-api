@@ -21,7 +21,7 @@ export class Sample extends Model {
   @property({
     type: 'string'
   })
-  @Column()
+  @Column({ nullable: true })
   description?: string;
 
   constructor(data?: Partial<Sample>) {

@@ -28,7 +28,7 @@ export class Instrument extends Model {
   @property({
     type: 'number'
   })
-  @Column()
+  @Column({ nullable: true })
   score?: number;
 
   constructor(data?: Partial<Instrument>) {

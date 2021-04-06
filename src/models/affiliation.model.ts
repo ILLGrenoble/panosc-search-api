@@ -21,19 +21,19 @@ export class Affiliation extends Model {
   @property({
     type: 'string'
   })
-  @Column()
+  @Column({ nullable: true })
   address?: string;
 
   @property({
     type: 'string'
   })
-  @Column()
+  @Column({ nullable: true })
   city?: string;
 
   @property({
     type: 'string'
   })
-  @Column()
+  @Column({ nullable: true })
   country?: string;
 
   constructor(data?: Partial<Affiliation>) {
