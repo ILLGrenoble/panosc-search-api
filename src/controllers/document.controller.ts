@@ -1,7 +1,7 @@
 import { inject } from '@loopback/core';
 import { Filter, FilterExcludingWhere, Where } from '@loopback/filter';
 import { get, getModelSchemaRef, param } from '@loopback/rest';
-import { AuthentiationComponent } from '../components';
+import { AuthenticationComponent } from '../components';
 import { AccountToken, Document } from '../models';
 import { DocumentService } from '../services';
 import { BaseController } from './base.controller';
@@ -21,8 +21,12 @@ export class DocumentController extends BaseController {
       }
     }
   })
-  async find(@inject(AuthentiationComponent.ACCOUNT_TOKEN) _accountToken: AccountToken, @param.query.object('filter') filter?: Filter<Document>): Promise<Document[]> {
-    return this._documentService.find(filter);
+  async find(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.query.object('filter') filter?: Filter<Document>): Promise<Document[]> {
+    if (accountToken) {
+      return this._documentService.findAuthenticated(accountToken, filter);
+    } else {
+      return this._documentService.findPublic(filter);
+    }
   }
 
   @get('/documents/{id}', {
@@ -35,8 +39,12 @@ export class DocumentController extends BaseController {
       }
     }
   })
-  async getDocument(@param.path.string('id') id: string, @param.query.object('filter') filter?: FilterExcludingWhere<Document>): Promise<Document> {
-    return this._documentService.findById(id, filter);
+  async getDocument(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.path.string('id') id: string, @param.query.object('filter') filter?: FilterExcludingWhere<Document>): Promise<Document> {
+    if (accountToken) {
+      return this._documentService.findAuthenticatedById(accountToken, id, filter);
+    } else {
+      return this._documentService.findPublicById(id, filter);
+    }
   }
 
   @get('/documents/count', {
@@ -49,7 +57,11 @@ export class DocumentController extends BaseController {
       }
     }
   })
-  async count(@param.query.object('where') where?: Where<Document>): Promise<number> {
-    return this._documentService.count(where);
+  async count(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.query.object('where') where?: Where<Document>): Promise<number> {
+    if (accountToken) {
+      return this._documentService.countAuthenticated(accountToken, where);
+    } else {
+      return this._documentService.countPublic(where);
+    }
   }
 }

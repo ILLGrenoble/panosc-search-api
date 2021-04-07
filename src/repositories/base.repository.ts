@@ -1,7 +1,7 @@
 import { AnyObject, Command, Filter, FilterExcludingWhere, NamedParameters, PositionalParameters, Where } from '@loopback/repository';
 import { FindManyOptions, ObjectType, Repository } from 'typeorm';
 import { TypeORMDataSource } from '../datasources';
-import { QueryExecutor } from './query-executor';
+import { QueryExecutor, QueryModifier } from './query-executor';
 
 export class BaseRepository<T extends {}, ID> {
   private _repository: Repository<T>;
@@ -23,22 +23,22 @@ export class BaseRepository<T extends {}, ID> {
     return this._repository;
   }
 
-  async findById(id: ID, filter?: FilterExcludingWhere<T>): Promise<T> {
+  async findById(id: ID, filter?: FilterExcludingWhere<T>, modifyQueryFn?: QueryModifier<T>): Promise<T> {
     await this.init();
 
-    return new QueryExecutor<ID, T>(this._builder).findOne(id, this.entityAlias, filter);
+    return new QueryExecutor<ID, T>(this._builder).findOne(id, this.entityAlias, filter, modifyQueryFn);
   }
 
-  async find(filter?: Filter<T>): Promise<T[]> {
+  async find(filter?: Filter<T>, modifyQueryFn?: QueryModifier<T>): Promise<T[]> {
     await this.init();
 
-    return new QueryExecutor<ID, T>(this._builder).findMany(this.entityAlias, filter);
+    return new QueryExecutor<ID, T>(this._builder).findMany(this.entityAlias, filter, modifyQueryFn);
   }
 
-  async count(where?: Where): Promise<number> {
+  async count(where?: Where, modifyQueryFn?: QueryModifier<T>): Promise<number> {
     await this.init();
 
-    return new QueryExecutor<ID, T>(this._builder).count(this.entityAlias, where);
+    return new QueryExecutor<ID, T>(this._builder).count(this.entityAlias, where, modifyQueryFn);
   }
 
   async save(entity: T): Promise<T> {

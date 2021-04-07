@@ -27,7 +27,7 @@ export class AccountTokenProvider implements Provider<AccountToken> {
         const userId = userInfo[userIdClaimKey] as string;
 
         const accountToken = new AccountToken({
-          id: userId,
+          id: `${userId}`,
           username: userInfo['preferred_username']
         });
 

@@ -3,10 +3,12 @@ import { SelectQueryBuilder } from 'typeorm';
 import { logger } from '../utils';
 import { FilterConverter, FindManyQueryOptions, FindOneQueryOptions, RelationOptions, WhereConverter } from './converter';
 
+export type QueryModifier<T> = (queryBuilder: SelectQueryBuilder<T>) => void;
+
 export class QueryExecutor<ID, T extends {}> {
   constructor(private _builder: (alias: string) => SelectQueryBuilder<T>) {}
 
-  async findOne(id: ID, alias: string, filter?: FilterExcludingWhere<T>): Promise<T> {
+  async findOne(id: ID, alias: string, filter?: FilterExcludingWhere<T>, modifyQueryFn?: QueryModifier<T>): Promise<T> {
     const queryBuilder = this._builder(alias);
 
     const options = new FilterConverter<T>().convertFindOneFilter(alias, {}, filter);
@@ -16,6 +18,10 @@ export class QueryExecutor<ID, T extends {}> {
       this._constructInnerJoins(options.relationOptions, queryBuilder);
       this._constructWhereClauses(options, queryBuilder);
       this._constructOrderBy(options, queryBuilder);
+    }
+
+    if (modifyQueryFn) {
+      modifyQueryFn(queryBuilder);
     }
 
     // execute the request
@@ -29,7 +35,7 @@ export class QueryExecutor<ID, T extends {}> {
     return result;
   }
 
-  async findMany(alias: string, filter?: FilterExcludingWhere<T>): Promise<T[]> {
+  async findMany(alias: string, filter?: FilterExcludingWhere<T>, modifyQueryFn?: QueryModifier<T>): Promise<T[]> {
     const queryBuilder = this._builder(alias);
 
     const options = new FilterConverter<T>().convertFindManyFilter(alias, {}, filter);
@@ -48,6 +54,10 @@ export class QueryExecutor<ID, T extends {}> {
       }
     }
 
+    if (modifyQueryFn) {
+      modifyQueryFn(queryBuilder);
+    }
+
     // execute the request
     const result = await queryBuilder.getMany();
 
@@ -59,11 +69,15 @@ export class QueryExecutor<ID, T extends {}> {
     return result;
   }
 
-  async count(alias: string, where?: Where): Promise<number> {
+  async count(alias: string, where?: Where, modifyQueryFn?: QueryModifier<T>): Promise<number> {
     const queryBuilder = this._builder(alias);
 
     const whereQueryOptions = new WhereConverter().convert(alias, where);
     queryBuilder.where(whereQueryOptions.whereClause, whereQueryOptions.whereParameters);
+
+    if (modifyQueryFn) {
+      modifyQueryFn(queryBuilder);
+    }
 
     const result = queryBuilder.getCount();
     return result;
@@ -117,7 +131,6 @@ export class QueryExecutor<ID, T extends {}> {
   }
 
   private _filterFields(entity: any, manyOptions?: FindOneQueryOptions) {
-
     //getConnection().getMetadata(Organization).ownColumns.map(column => column.propertyName)
 
     if (manyOptions) {
