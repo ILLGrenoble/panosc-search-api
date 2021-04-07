@@ -122,4 +122,10 @@ export class Document extends Model {
   constructor(data?: Partial<Document>) {
     super(data);
   }
+
+  generateFilesIfEmpty() {
+    if (this.datasets) {
+      this.datasets.forEach((dataset) => dataset.generateFilesIfEmpty());
+    }
+  }
 }

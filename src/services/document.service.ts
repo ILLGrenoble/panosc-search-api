@@ -10,28 +10,47 @@ export class DocumentService extends BaseService<Document, string, DocumentRepos
     super(repo);
   }
 
-  findPublicById(id: string, filter: FilterExcludingWhere<Document>): Promise<Document> {
-    return this._repository.findPublicById(id, filter);
+  async findPublicById(id: string, filter: FilterExcludingWhere<Document>): Promise<Document> {
+    const document = await this._repository.findPublicById(id, filter);
+    this.injectFiles(document);
+
+    return document;
   }
 
-  findPublic(filter: Filter<Document>): Promise<Document[]> {
-    return this._repository.findPublic(filter);
+  async findPublic(filter: Filter<Document>): Promise<Document[]> {
+    const documents = await this._repository.findPublic(filter);
+    this.injectFiles(documents);
+
+    return documents;
   }
 
   countPublic(where?: Where): Promise<number> {
     return this._repository.countPublic(where);
   }
 
-  findAuthenticatedById(accountToken: AccountToken, id: string, filter: FilterExcludingWhere<Document>): Promise<Document> {
-    return this._repository.findAuthenticatedById(accountToken, id, filter);
+  async findAuthenticatedById(accountToken: AccountToken, id: string, filter: FilterExcludingWhere<Document>): Promise<Document> {
+    const document = await this._repository.findAuthenticatedById(accountToken, id, filter);
+    this.injectFiles(document);
+
+    return document;
   }
 
-  findAuthenticated(accountToken: AccountToken, filter: Filter<Document>): Promise<Document[]> {
-    return this._repository.findAuthenticated(accountToken, filter);
+  async findAuthenticated(accountToken: AccountToken, filter: Filter<Document>): Promise<Document[]> {
+    const documents = await this._repository.findAuthenticated(accountToken, filter);
+    this.injectFiles(documents);
+
+    return documents;
   }
 
   countAuthenticated(accountToken: AccountToken, where?: Where): Promise<number> {
     return this._repository.countAuthenticated(accountToken, where);
   }
 
+  injectFiles(input: Document | Document[]) {
+    if (Array.isArray(input)) {
+      input.forEach((document) => document.generateFilesIfEmpty());
+    } else {
+      input.generateFilesIfEmpty();
+    }
+  }
 }

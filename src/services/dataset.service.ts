@@ -10,27 +10,47 @@ export class DatasetService extends BaseService<Dataset, string, DatasetReposito
     super(repo);
   }
 
-  findPublicById(id: string, filter: FilterExcludingWhere<Dataset>): Promise<Dataset> {
-    return this._repository.findPublicById(id, filter);
+  async findPublicById(id: string, filter: FilterExcludingWhere<Dataset>): Promise<Dataset> {
+    const dataset = await this._repository.findPublicById(id, filter);
+    this.injectFiles(dataset);
+
+    return dataset;
   }
 
-  findPublic(filter: Filter<Dataset>): Promise<Dataset[]> {
-    return this._repository.findPublic(filter);
+  async findPublic(filter: Filter<Dataset>): Promise<Dataset[]> {
+    const datasets = await this._repository.findPublic(filter);
+    this.injectFiles(datasets);
+
+    return datasets;
   }
 
   countPublic(where?: Where): Promise<number> {
     return this._repository.countPublic(where);
   }
 
-  findAuthenticatedById(accountToken: AccountToken, id: string, filter: FilterExcludingWhere<Dataset>): Promise<Dataset> {
-    return this._repository.findAuthenticatedById(accountToken, id, filter);
+  async findAuthenticatedById(accountToken: AccountToken, id: string, filter: FilterExcludingWhere<Dataset>): Promise<Dataset> {
+    const dataset = await this._repository.findAuthenticatedById(accountToken, id, filter);
+    this.injectFiles(dataset);
+
+    return dataset;
   }
 
-  findAuthenticated(accountToken: AccountToken, filter: Filter<Dataset>): Promise<Dataset[]> {
-    return this._repository.findAuthenticated(accountToken, filter);
+  async findAuthenticated(accountToken: AccountToken, filter: Filter<Dataset>): Promise<Dataset[]> {
+    const datasets = await this._repository.findAuthenticated(accountToken, filter);
+    this.injectFiles(datasets);
+
+    return datasets;
   }
 
   countAuthenticated(accountToken: AccountToken, where?: Where): Promise<number> {
     return this._repository.countAuthenticated(accountToken, where);
+  }
+
+  injectFiles(input: Dataset | Dataset[]) {
+    if (Array.isArray(input)) {
+      input.forEach((dataset) => dataset.generateFilesIfEmpty());
+    } else {
+      input.generateFilesIfEmpty();
+    }
   }
 }

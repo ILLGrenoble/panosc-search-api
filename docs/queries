@@ -40,5 +40,8 @@ curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/in
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/instruments' --data-urlencode 'filter={"where": {"name": {"like": "D%"}}, "skip": 0, "limit": 3}'
 
 
-// Get all datasets
+// Get first 10 datasets with document included
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/datasets' --data-urlencode 'filter={"limit": 10, "include": [{"relation": "document"}]}'
+
+// Get first 10 datasets with files included
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/datasets' --data-urlencode 'filter={"limit": 10, "include": [{"relation": "files"}]}'

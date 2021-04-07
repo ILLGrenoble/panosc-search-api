@@ -143,4 +143,22 @@ export class Dataset extends Model {
   constructor(data?: Partial<Dataset>) {
     super(data);
   }
+
+  generateFilesIfEmpty() {
+    if (this.files && this.files.length === 0) {
+      if (this.firstFileNumor != null && this.lastFileNumor != null && this.path != null) {
+        const starPosition = this.path.lastIndexOf('*');
+        const path = this.path.substring(0, starPosition);
+        const extension = (starPosition + 1) === this.path.length ? null : this.path.substr(starPosition + 1);
+
+        for (let numor = this.firstFileNumor; numor <= this.lastFileNumor; numor++) {
+          this.files.push(new File({
+            name: extension ? `${numor}${extension}`: `${numor}`,
+            path: path,
+            datasetId: this.pid
+          }));
+        }
+      }
+    }
+  }
 }

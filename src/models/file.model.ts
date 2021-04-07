@@ -31,6 +31,13 @@ export class File extends Model {
   @Column({ nullable: true })
   size?: number;
 
+  @property({
+    type: 'string',
+    required: true
+  })
+  @Column({ name: 'datasetid', nullable: false })
+  datasetId: string;
+
   @ManyToOne((type) => Dataset)
   @JoinColumn({ name: 'datasetid', referencedColumnName: 'pid' })
   dataset: Dataset;
