@@ -5,7 +5,8 @@ import { RestApplication } from '@loopback/rest';
 import { RestExplorerBindings, RestExplorerComponent } from '@loopback/rest-explorer';
 import { ServiceMixin } from '@loopback/service-proxy';
 import path from 'path';
-import {AuthenticationComponent} from './components/authentication.component';
+import { AuthenticationComponent } from './components/authentication.component';
+import { QueryComponent } from './components/query.component';
 import { MySequence } from './sequence';
 
 export { ApplicationConfig };
@@ -15,6 +16,7 @@ export class SearchApiApplication extends BootMixin(ServiceMixin(RepositoryMixin
     super(options);
 
     this.component(AuthenticationComponent);
+    this.component(QueryComponent);
 
     // Set up the custom sequence
     this.sequence(MySequence);

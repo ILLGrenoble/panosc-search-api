@@ -85,4 +85,10 @@ export class BaseRepository<T extends {}, ID> {
     const result = await this._repository.query(<string>command, <any[]>parameters);
     return result;
   }
+
+  async getEntityMetadata() {
+    await this.init();
+
+    return (await this._dataSource.connection()).getMetadata(this._entityClass);
+  }
 }

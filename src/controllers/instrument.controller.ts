@@ -1,6 +1,7 @@
 import { inject } from '@loopback/core';
-import { Filter, FilterExcludingWhere, Where } from '@loopback/filter';
+import { Filter, Where } from '@loopback/filter';
 import { get, getModelSchemaRef, param } from '@loopback/rest';
+import { QueryComponent } from '../components';
 import { Instrument } from '../models';
 import { InstrumentService } from '../services';
 import { BaseController } from './base.controller';
@@ -20,7 +21,7 @@ export class InstrumentController extends BaseController {
       }
     }
   })
-  async find(@param.query.object('filter') filter?: Filter<Instrument>): Promise<Instrument[]> {
+  async find(@inject(QueryComponent.INSTRUMENT_FILTER) filter?: Filter<Instrument>): Promise<Instrument[]> {
     return this._instrumentService.find(filter);
   }
 
@@ -34,7 +35,7 @@ export class InstrumentController extends BaseController {
       }
     }
   })
-  async getInstrument(@param.path.string('id') id: string, @param.query.object('filter') filter?: FilterExcludingWhere<Instrument>): Promise<Instrument> {
+  async getInstrument(@param.path.string('id') id: string, @inject(QueryComponent.INSTRUMENT_FILTER) filter?: Filter<Instrument>): Promise<Instrument> {
     return this._instrumentService.findById(id, filter);
   }
 
@@ -48,7 +49,7 @@ export class InstrumentController extends BaseController {
       }
     }
   })
-  async count(@param.query.object('where') where?: Where<Instrument>): Promise<number> {
+  async count(@inject(QueryComponent.INSTRUMENT_WHERE) where?: Where<Instrument>): Promise<number> {
     return this._instrumentService.count(where);
   }
 }

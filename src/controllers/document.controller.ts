@@ -1,7 +1,7 @@
 import { inject } from '@loopback/core';
-import { Filter, FilterExcludingWhere, Where } from '@loopback/filter';
+import { Filter, Where } from '@loopback/filter';
 import { get, getModelSchemaRef, param } from '@loopback/rest';
-import { AuthenticationComponent } from '../components';
+import { AuthenticationComponent, QueryComponent } from '../components';
 import { AccountToken, Document } from '../models';
 import { DocumentService } from '../services';
 import { BaseController } from './base.controller';
@@ -21,7 +21,7 @@ export class DocumentController extends BaseController {
       }
     }
   })
-  async find(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.query.object('filter') filter?: Filter<Document>): Promise<Document[]> {
+  async find(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @inject(QueryComponent.DOCUMENT_FILTER) filter?: Filter<Document>): Promise<Document[]> {
     if (accountToken) {
       return this._documentService.findAuthenticated(accountToken, filter);
     } else {
@@ -39,7 +39,7 @@ export class DocumentController extends BaseController {
       }
     }
   })
-  async getDocument(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.path.string('id') id: string, @param.query.object('filter') filter?: FilterExcludingWhere<Document>): Promise<Document> {
+  async getDocument(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.path.string('id') id: string, @inject(QueryComponent.DOCUMENT_FILTER) filter?: Filter<Document>): Promise<Document> {
     if (accountToken) {
       return this._documentService.findAuthenticatedById(accountToken, id, filter);
     } else {
@@ -57,7 +57,7 @@ export class DocumentController extends BaseController {
       }
     }
   })
-  async count(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.query.object('where') where?: Where<Document>): Promise<number> {
+  async count(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @inject(QueryComponent.DOCUMENT_WHERE) where?: Where<Document>): Promise<number> {
     if (accountToken) {
       return this._documentService.countAuthenticated(accountToken, where);
     } else {

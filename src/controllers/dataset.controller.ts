@@ -1,7 +1,7 @@
 import { inject } from '@loopback/core';
-import { Filter, FilterExcludingWhere, Where } from '@loopback/filter';
+import { Filter, Where } from '@loopback/filter';
 import { get, getModelSchemaRef, param } from '@loopback/rest';
-import { AuthenticationComponent } from '../components';
+import { AuthenticationComponent, QueryComponent } from '../components';
 import { AccountToken, Dataset } from '../models';
 import { DatasetService } from '../services';
 import { BaseController } from './base.controller';
@@ -21,7 +21,7 @@ export class DatasetController extends BaseController {
       }
     }
   })
-  async find(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.query.object('filter') filter?: Filter<Dataset>): Promise<Dataset[]> {
+  async find(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @inject(QueryComponent.DATASET_FILTER) filter?: Filter<Dataset>): Promise<Dataset[]> {
     if (accountToken) {
       return this._datasetService.findAuthenticated(accountToken, filter);
     } else {
@@ -39,7 +39,7 @@ export class DatasetController extends BaseController {
       }
     }
   })
-  async getDataset(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.path.string('id') id: string, @param.query.object('filter') filter?: FilterExcludingWhere<Dataset>): Promise<Dataset> {
+  async getDataset(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.path.string('id') id: string, @inject(QueryComponent.DATASET_FILTER) filter?: Filter<Dataset>): Promise<Dataset> {
     if (accountToken) {
       return this._datasetService.findAuthenticatedById(accountToken, id, filter);
     } else {
@@ -57,11 +57,11 @@ export class DatasetController extends BaseController {
       }
     }
   })
-  async count(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.query.object('where') where?: Where<Dataset>): Promise<number> {
+  async count(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @inject(QueryComponent.DATASET_WHERE) where?: Where<Dataset>): Promise<number> {
     if (accountToken) {
       return this._datasetService.countAuthenticated(accountToken, where);
     } else {
       return this._datasetService.countPublic(where);
     }
-  } 
+  }
 }

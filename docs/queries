@@ -24,6 +24,9 @@ curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/do
 // Get all documents with only principal_investigators and specific person Id
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"where": {"role": "principal_investigator"}, "include": [{"relation": "person", "scope": {"where": {"id": "237674"}}}, {"relation" : "affiliation"}]}}]}'
 
+// Get all documents for specific person Id
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"include": [{"relation": "members", "scope": {"include": [{"relation": "person", "scope": {"where": {"id": "237674"}}}, {"relation" : "affiliation"}]}}]}'
+
 // Get all documents with only principal_investigators and specific person Id with selected fields
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"fields": ["title"], "include": [{"relation": "members", "scope": {"where": {"role": "principal_investigator"}, "include": [{"relation": "person", "scope": {"where": {"id": "237674"}, "fields": ["fullName"]}}, {"relation" : "affiliation"}]}}]}'
 
