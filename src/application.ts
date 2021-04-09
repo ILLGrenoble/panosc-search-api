@@ -1,10 +1,11 @@
 import { BootMixin } from '@loopback/boot';
 import { ApplicationConfig } from '@loopback/core';
 import { RepositoryMixin } from '@loopback/repository';
-import { RestApplication } from '@loopback/rest';
+import { RestApplication, RestBindings } from '@loopback/rest';
 import { RestExplorerBindings, RestExplorerComponent } from '@loopback/rest-explorer';
 import { ServiceMixin } from '@loopback/service-proxy';
 import path from 'path';
+import { CaseInsensitiveRouter } from './case-insensitive.router';
 import { AuthenticationComponent } from './components/authentication.component';
 import { QueryComponent } from './components/query.component';
 import { MySequence } from './sequence';
@@ -25,6 +26,8 @@ export class SearchApiApplication extends BootMixin(ServiceMixin(RepositoryMixin
     this.static('/', path.join(__dirname, '../public'));
 
     this.basePath('/api');
+
+    this.bind(RestBindings.ROUTER).toClass(CaseInsensitiveRouter);
 
     // Customize @loopback/rest-explorer configuration here
     this.configure(RestExplorerBindings.COMPONENT).to({
