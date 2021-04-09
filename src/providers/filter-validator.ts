@@ -1,6 +1,6 @@
-import {Filter} from '@loopback/filter';
-import {EntityMetadata} from 'typeorm';
-import {WhereValidator} from './where-validator';
+import { Filter } from '@loopback/filter';
+import { EntityMetadata } from 'typeorm';
+import { WhereValidator } from './where-validator';
 
 export class FilterValidator {
   validate(filter: Filter<any>, entityMetadata: EntityMetadata) {
@@ -37,6 +37,13 @@ export class FilterValidator {
           if (!relations.includes(include.relation)) {
             throw new Error(`included relation '${include.relation}' is not a member of ${entityMetadata.name}`);
           }
+
+          const includeProperties = Object.keys(include);
+          includeProperties.forEach((includeProperty) => {
+            if (!['scope', 'relation'].includes(includeProperty)) {
+              throw new Error(`Invalid relation '${include.relation}' - found property '${includeProperty}' but should be 'scope'`);
+            }
+          });
 
           const relation = entityMetadata.relations.find((relation) => relation.propertyName === include.relation);
           const relationMetadata = relation.inverseEntityMetadata;

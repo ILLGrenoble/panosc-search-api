@@ -290,48 +290,47 @@ describe('DocumentController', () => {
     });
   });
 
-  //   context('where datasets have a file matching text `file1`', () => {
-  //     it('should return an array of documents with datasets and files matching the query', (done) => {
-  //       const filter = JSON.stringify({
-  //         include: [
-  //           {
-  //             relation: 'datasets',
-  //             scope: {
-  //               include: [{relation: 'files', scope: {where: {text: 'file1'}}}],
-  //             },
-  //           },
-  //         ],
-  //       });
-  //       client
-  //         .get(requestUrl + '?filter=' + filter)
-  //         .set('Accept', 'application/json')
-  //         .expect(200)
-  //         .expect('Content-Type', /json/)
-  //         .end((err, res) => {
-  //           if (err) throw err;
+  context('where datasets have a file matching text `file1`', () => {
+    it('should return an array of documents with datasets and files matching the query', (done) => {
+      const filter = JSON.stringify({
+        include: [
+          {
+            relation: 'datasets',
+            scope: {
+              include: [{ relation: 'files', scope: { where: { text: 'file1' } } }]
+            }
+          }
+        ]
+      });
+      client
+        .get(requestUrl + '?filter=' + filter)
+        .set('Accept', 'application/json')
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) throw err;
 
-  //           expect(res.body).to.be.an.Array();
-  //           res.body.forEach((document) => {
-  //             expect(document).to.have.property('pid');
-  //             expect(document).to.have.property('isPublic');
-  //             expect(document).to.have.property('type');
-  //             expect(document).to.have.property('title');
-  //             expect(document).to.have.property('score');
-  //             expect(document).to.have.property('datasets');
-  //             expect(document.datasets).to.be.an.Array().and.not.empty;
-  //             document.datasets.forEach((dataset) => {
-  //               expect(dataset).to.have.property('files');
-  //               expect(dataset.files).to.be.an.Array().and.not.empty;
-  //               dataset.files.forEach((file) => {
-  //                 expect(file.name).to.match('file1');
-  //               });
-  //             });
-  //           });
-  //           done();
-  //         });
-  //     });
-  //   });
-  // });
+          expect(res.body).to.be.an.Array();
+          res.body.forEach((document) => {
+            expect(document).to.have.property('pid');
+            expect(document).to.have.property('isPublic');
+            expect(document).to.have.property('type');
+            expect(document).to.have.property('title');
+            expect(document).to.have.property('score');
+            expect(document).to.have.property('datasets');
+            expect(document.datasets).to.be.an.Array().and.not.empty;
+            document.datasets.forEach((dataset) => {
+              expect(dataset).to.have.property('files');
+              expect(dataset.files).to.be.an.Array().and.not.empty;
+              dataset.files.forEach((file) => {
+                expect(file.name).to.match(/file1/g);
+              });
+            });
+          });
+          done();
+        });
+    });
+  });
 
   describe('GET /documents/{id}', () => {
     it('should return the document with the requested pid', (done) => {

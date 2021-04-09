@@ -4,6 +4,7 @@ import { HttpErrors, Request } from '@loopback/rest';
 import { EntityMetadata } from 'typeorm';
 import { BaseRepository } from '../repositories';
 import { FilterValidator } from './filter-validator';
+import {TextSearchModifier} from './text-search-modifier';
 
 @bind({ scope: BindingScope.TRANSIENT })
 export class FilterProvider<T extends {}, ID> implements Provider<Filter> {
@@ -23,10 +24,11 @@ export class FilterProvider<T extends {}, ID> implements Provider<Filter> {
       } catch (error) {
         throw new HttpErrors.BadRequest(`Failed to parse request filter: ${error.message}`);
       }
+      const entityMetadata = await this._repository.getEntityMetadata();
 
       // Modify filter for generic text search
-
-      const entityMetadata = await this._repository.getEntityMetadata();
+      const textSearchModifier = new TextSearchModifier();
+      textSearchModifier.modifyFilter(filter, entityMetadata);
 
       try {
         // Vaidate filter structure
@@ -36,22 +38,6 @@ export class FilterProvider<T extends {}, ID> implements Provider<Filter> {
         throw new HttpErrors.BadRequest(`Filter structure is invalid: ${error.message}`);
       }
       return filter;
-    }
-  }
-
-  private _validateWhereStructure(where: any, entityMetadata: EntityMetadata) {
-    const properties = entityMetadata.ownColumns.map((column) => column.propertyName);
-
-    for (const key in where) {
-      if (key === 'and') {
-        where.and.forEach((and: any) => this._validateWhereStructure(and, entityMetadata));
-      } else if (key === 'or') {
-        where.or.forEach((or: any) => this._validateWhereStructure(or, entityMetadata));
-      } else {
-        if (!properties.includes(key)) {
-          throw new Error(`field '${key}' in where clause is not a member of ${entityMetadata.name}`);
-        }
-      }
     }
   }
 }

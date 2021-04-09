@@ -2,6 +2,7 @@ import { bind, BindingScope, Provider } from '@loopback/core';
 import { Where } from '@loopback/filter';
 import { HttpErrors, Request } from '@loopback/rest';
 import { BaseRepository } from '../repositories';
+import { TextSearchModifier } from './text-search-modifier';
 import { WhereValidator } from './where-validator';
 
 @bind({ scope: BindingScope.TRANSIENT })
@@ -24,6 +25,10 @@ export class WhereProvider<T extends {}, ID> implements Provider<Where> {
       }
 
       const entityMetadata = await this._repository.getEntityMetadata();
+
+      // Modify filter for generic text search
+      const textSearchModifier = new TextSearchModifier();
+      where = textSearchModifier.modifyWhere(where, entityMetadata);
 
       try {
         // Vaidate where structure

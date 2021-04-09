@@ -65,6 +65,14 @@ export class WhereConverter {
           const parameterName = getNextParameterName(parameters);
           parameters[parameterName] = condition.like;
           clause = `${alias}.${key} NOT LIKE :${parameterName}`;
+        } else if (condition.ilike) {
+          const parameterName = getNextParameterName(parameters);
+          parameters[parameterName] = condition.ilike;
+          clause = `LOWER(${alias}.${key}) LIKE LOWER(:${parameterName})`;
+        } else if (condition.nilike) {
+          const parameterName = getNextParameterName(parameters);
+          parameters[parameterName] = condition.nilike;
+          clause = `LOWER(${alias}.${key}) NOT LIKE LOWER(:${parameterName})`;
         } else if (condition.inq) {
           let vals = '';
           for (let i = 0; i < condition.inq.length; i++) {
