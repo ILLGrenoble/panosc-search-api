@@ -31,11 +31,11 @@ export class AccountTokenProvider implements Provider<AccountToken> {
           username: userInfo['preferred_username']
         });
 
-        logger.info(`User ${accountToken.username} (${accountToken.id}) requesting ${this.request.baseUrl}/${this.request.path}`);
+        logger.info(`User ${accountToken.username} (${accountToken.id}) requesting ${this.request.baseUrl}${this.request.path}`);
 
         return accountToken;
       } else {
-        logger.info(`User <anonymous> requesting ${this.request.baseUrl}/${this.request.path}`);
+        logger.info(`User <anonymous> requesting ${this.request.baseUrl}${this.request.path}`);
       }
     } catch (error) {
       logger.error(`Authentication error: ${error.message}`);

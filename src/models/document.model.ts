@@ -76,13 +76,6 @@ export class Document extends Model {
   @Column({ type: 'text', array: true })
   keywords?: string[];
 
-  @property.array(String, {
-    required: true,
-    hidden: true
-  })
-  @Column({ type: 'text', array: true, nullable: true })
-  acls: string[];
-
   @property({
     type: 'number'
   })

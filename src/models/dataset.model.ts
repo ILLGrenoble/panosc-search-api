@@ -69,13 +69,6 @@ export class Dataset extends Model {
   @Column({ nullable: true })
   path: string;
 
-  @property.array(String, {
-    required: true,
-    hidden: true
-  })
-  @Column({ type: 'text', array: true, nullable: true })
-  acls: string[];
-
   @property({
     type: 'number'
   })
