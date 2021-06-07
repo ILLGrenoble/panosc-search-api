@@ -41,9 +41,13 @@ export class DocumentController extends BaseController {
   })
   async getDocument(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.path.string('id') id: string, @inject(QueryComponent.DOCUMENT_FILTER) filter?: Filter<Document>): Promise<Document> {
     if (accountToken) {
-      return this._documentService.findAuthenticatedById(accountToken, id, filter);
+      const document = await this._documentService.findAuthenticatedById(accountToken, id, filter);
+      this.throwNotFoundIfNull(document);
+      return document;
     } else {
-      return this._documentService.findPublicById(id, filter);
+      const document = await this._documentService.findPublicById(id, filter);
+      this.throwNotFoundIfNull(document);
+      return document;
     }
   }
 

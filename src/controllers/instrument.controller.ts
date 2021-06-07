@@ -36,7 +36,9 @@ export class InstrumentController extends BaseController {
     }
   })
   async getInstrument(@param.path.string('id') id: string, @inject(QueryComponent.INSTRUMENT_FILTER) filter?: Filter<Instrument>): Promise<Instrument> {
-    return this._instrumentService.findById(id, filter);
+    const instrument = await this._instrumentService.findById(id, filter);
+    this.throwNotFoundIfNull(instrument);
+    return instrument;
   }
 
   @get('/instruments/count', {

@@ -47,10 +47,12 @@ export class DocumentService extends BaseService<Document, string, DocumentRepos
   }
 
   injectFiles(input: Document | Document[]) {
-    if (Array.isArray(input)) {
-      input.forEach((document) => document.generateFilesIfEmpty());
-    } else {
-      input.generateFilesIfEmpty();
+    if (input) {
+      if (Array.isArray(input)) {
+        input.forEach((document) => document.generateFilesIfEmpty());
+      } else {
+        input.generateFilesIfEmpty();
+      }
     }
   }
 }

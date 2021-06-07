@@ -41,9 +41,13 @@ export class DatasetController extends BaseController {
   })
   async getDataset(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @param.path.string('id') id: string, @inject(QueryComponent.DATASET_FILTER) filter?: Filter<Dataset>): Promise<Dataset> {
     if (accountToken) {
-      return this._datasetService.findAuthenticatedById(accountToken, id, filter);
+      const dataset = await this._datasetService.findAuthenticatedById(accountToken, id, filter);
+      this.throwNotFoundIfNull(dataset);
+      return dataset;
     } else {
-      return this._datasetService.findPublicById(id, filter);
+      const dataset = await this._datasetService.findPublicById(id, filter);
+      this.throwNotFoundIfNull(dataset);
+      return dataset;
     }
   }
 

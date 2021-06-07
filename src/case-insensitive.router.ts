@@ -10,7 +10,13 @@ export class CaseInsensitiveRouter extends TrieRouter {
 
   find(request: Request) {
     // Put path to lower case
-    let path = request.path.toLowerCase();
+    let path = request.path;
+    const pathArray = path.split('/');
+    const index = path.startsWith('/') ? 1 : 0;
+    if (pathArray.length > index) {
+      pathArray[index] = pathArray[index].toLowerCase();
+    }
+    path = pathArray.join('/');
 
     // Non-strict mode
     if (this.options.strict) {
