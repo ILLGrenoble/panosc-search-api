@@ -1,15 +1,26 @@
-import { Filter } from '@loopback/filter';
-import { EntityMetadata } from 'typeorm';
-import { WhereValidator } from './where-validator';
+import {Filter} from '@loopback/filter';
+import {EntityMetadata} from 'typeorm';
+import {WhereValidator} from './where-validator';
 
 export class FilterValidator {
   validate(filter: Filter<any>, entityMetadata: EntityMetadata) {
     const properties = entityMetadata.ownColumns.map((column) => column.propertyName);
     const relations = entityMetadata.relations.map((relation) => relation.propertyName);
 
+    // Check for valid filter syntax: throw bad request if contains field that are non-standard
+    const acceptedQueryFields = ['fields', 'include', 'limit', 'order', 'skip', 'where'];
+    const filterQueryFields = Object.keys(filter);
+    const invalidQueryFields = filterQueryFields.filter((filterQueryField: string) => {
+      return !acceptedQueryFields.includes(filterQueryField);
+    });
+
+    if (invalidQueryFields.length > 0) {
+      throw new Error(`Filter includes one or more request fields that are not valid: ['${invalidQueryFields.join(', ')}']`);
+    }
+
     let fields = filter && filter.fields;
-    let where = filter && filter.where;
-    let includes = filter && filter.include;
+    const where = filter && filter.where;
+    const includes = filter && filter.include;
 
     // Validate fields
     if (fields) {
