@@ -56,3 +56,6 @@ curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/da
 
 // Get first 10 datasets with files included
 curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/datasets' --data-urlencode 'filter={"limit": 10, "include": [{"relation": "files"}]}'
+
+// Get first 5 documents including members, persons, affiliations, datasets, parameters (of document and dataset)
+curl -G -X GET --header 'Accept: application/json' 'http://localhost:3000/api/documents' --data-urlencode 'filter={"limit": "5", "include": [{"relation": "datasets", "scope": {"include": [{"relation": "parameters"}]}}, {"relation": "parameters"}, {"relation": "members", "scope": {"include": [{"relation": "person"}, {"relation" : "affiliation"}]}}]}'

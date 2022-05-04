@@ -4,6 +4,10 @@ import {WhereValidator} from './where-validator';
 
 export class FilterValidator {
   validate(filter: Filter<any>, entityMetadata: EntityMetadata) {
+    if (!filter) {
+      return;
+    }
+
     const properties = entityMetadata.ownColumns.map((column) => column.propertyName);
     const relations = entityMetadata.relations.map((relation) => relation.propertyName);
 
@@ -18,9 +22,9 @@ export class FilterValidator {
       throw new Error(`Filter includes one or more request fields that are not valid: ['${invalidQueryFields.join(', ')}']`);
     }
 
-    let fields = filter && filter.fields;
-    const where = filter && filter.where;
-    const includes = filter && filter.include;
+    let fields = filter.fields;
+    const where = filter.where;
+    const includes = filter.include;
 
     // Validate fields
     if (fields) {
@@ -56,7 +60,7 @@ export class FilterValidator {
             }
           });
 
-          const relation = entityMetadata.relations.find((relation) => relation.propertyName === include.relation);
+          const relation = entityMetadata.relations.find((entityMetadataRelation) => entityMetadataRelation.propertyName === include.relation);
           const relationMetadata = relation.inverseEntityMetadata;
 
           this.validate(include.scope, relationMetadata);
