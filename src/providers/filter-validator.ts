@@ -12,7 +12,7 @@ export class FilterValidator {
     const relations = entityMetadata.relations.map((relation) => relation.propertyName);
 
     // Check for valid filter syntax: throw bad request if contains field that are non-standard
-    const acceptedQueryFields = ['fields', 'include', 'limit', 'order', 'skip', 'where'];
+    const acceptedQueryFields = ['fields', 'include', 'limit', 'order', 'skip', 'where', 'query'];
     const filterQueryFields = Object.keys(filter);
     const invalidQueryFields = filterQueryFields.filter((filterQueryField: string) => {
       return !acceptedQueryFields.includes(filterQueryField);
@@ -25,6 +25,7 @@ export class FilterValidator {
     let fields = filter.fields;
     const where = filter.where;
     const includes = filter.include;
+    const query = filter.query;
 
     // Validate fields
     if (fields) {

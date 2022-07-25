@@ -21,6 +21,10 @@ export class ApplicationConfig {
     userIdClaimKey: string;
   };
 
+  scoring: {
+    url: string;
+  }
+
   constructor(data?: Partial<ApplicationConfig>) {
     Object.assign(this, data);
   }
@@ -49,6 +53,9 @@ export function APPLICATION_CONFIG(): ApplicationConfig {
         url: process.env.SEARCH_API_OIDC_URL,
         clientId: process.env.SEARCH_API_LOG_LEVEL,
         userIdClaimKey: process.env.SEARCH_API_OIDC_USER_ID_CLAIM_KEY
+      },
+      scoring: {
+        url: process.env.SEARCH_API_SCORING_SERVICE_URL
       }
     };
   }

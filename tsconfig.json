@@ -6,7 +6,10 @@
     "rootDir": "src",
     "strictNullChecks": false,
     "noImplicitAny": false,
-    "sourceMap": true
+    "sourceMap": true,
+    "experimentalDecorators": true
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }

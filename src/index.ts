@@ -1,8 +1,8 @@
-import {ApplicationConfig} from '@loopback/core';
 import * as dotenv from 'dotenv';
+dotenv.config();
 import {SearchApiApplication} from './application';
 import {logger} from './utils';
-dotenv.config();
+import {ApplicationConfig} from '@loopback/core';
 
 export * from './application';
 

@@ -1,13 +1,13 @@
-import { inject } from '@loopback/core';
-import { Filter, Where } from '@loopback/filter';
-import { get, getModelSchemaRef, param } from '@loopback/rest';
-import { AuthenticationComponent, QueryComponent } from '../components';
-import { AccountToken, Document } from '../models';
-import { DocumentService } from '../services';
-import { BaseController } from './base.controller';
+import {inject} from '@loopback/core';
+import {Filter, Where} from '@loopback/filter';
+import {get, getModelSchemaRef, param} from '@loopback/rest';
+import {AuthenticationComponent, QueryComponent} from '../components';
+import {AccountToken, Document} from '../models';
+import {DocumentService, ScoringService} from '../services';
+import {BaseController} from './base.controller';
 
 export class DocumentController extends BaseController {
-  constructor(@inject('services.DocumentService') private _documentService: DocumentService) {
+  constructor(@inject('services.DocumentService') private _documentService: DocumentService, @inject('services.ScoringService') private _scoringService: ScoringService) {
     super();
   }
 
@@ -17,16 +17,21 @@ export class DocumentController extends BaseController {
     responses: {
       '200': {
         description: 'Ok',
-        content: { 'application/json': { schema: getModelSchemaRef(Document) } }
+        content: {'application/json': {schema: getModelSchemaRef(Document)}}
       }
     }
   })
   async find(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @inject(QueryComponent.DOCUMENT_FILTER) filter?: Filter<Document>): Promise<Document[]> {
+    let result: Promise<Document[]>;
     if (accountToken) {
-      return this._documentService.findAuthenticated(accountToken, filter);
+      result = this._documentService.findAuthenticated(accountToken, filter);
     } else {
-      return this._documentService.findPublic(filter);
+      result = this._documentService.findPublic(filter);
+      (await result).forEach(x => x.score = 0)
+      await this._scoringService.score(result, filter.query);
+      (await result).sort((a, b) => a.score < b.score ? 1 : -1);
     }
+    return result;
   }
 
   @get('/documents/{id}', {
@@ -35,7 +40,7 @@ export class DocumentController extends BaseController {
     responses: {
       '200': {
         description: 'Ok',
-        content: { 'application/json': { schema: getModelSchemaRef(Document) } }
+        content: {'application/json': {schema: getModelSchemaRef(Document)}}
       }
     }
   })
@@ -57,7 +62,7 @@ export class DocumentController extends BaseController {
     responses: {
       '200': {
         description: 'Ok',
-        content: { 'application/json': { schema: getModelSchemaRef(Document) } }
+        content: {'application/json': {schema: getModelSchemaRef(Document)}}
       }
     }
   })

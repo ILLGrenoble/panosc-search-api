@@ -32,7 +32,8 @@
     "preopenapi-spec": "npm run build",
     "openapi-spec": "node ./dist/openapi-spec",
     "prestart": "npm run rebuild",
-    "start": "node -r source-map-support/register .",
+    "start": "node --inspect -r source-map-support/register .",
+    "debug": "npm start",
     "clean": "lb-clean dist *.tsbuildinfo .eslintcache",
     "rebuild": "npm run clean && npm run build"
   },
@@ -54,6 +55,7 @@
     "@loopback/rest": "^9.2.0",
     "@loopback/rest-explorer": "^3.2.0",
     "@loopback/service-proxy": "^3.1.0",
+    "axios": "^0.27.2",
     "dotenv": "^8.2.0",
     "openid-client": "^4.6.0",
     "pg": "^8.5.1",
