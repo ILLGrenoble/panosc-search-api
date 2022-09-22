@@ -25,7 +25,6 @@ export class FilterValidator {
     let fields = filter.fields;
     const where = filter.where;
     const includes = filter.include;
-    const query = filter.query;
 
     // Validate fields
     if (fields) {

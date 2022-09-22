@@ -1,6 +1,7 @@
 import {inject} from '@loopback/core';
 import {Filter, Where} from '@loopback/filter';
 import {get, getModelSchemaRef, param} from '@loopback/rest';
+import {APPLICATION_CONFIG} from '../application-config';
 import {AuthenticationComponent, QueryComponent} from '../components';
 import {AccountToken, Document} from '../models';
 import {DocumentService, ScoringService} from '../services';
@@ -22,16 +23,56 @@ export class DocumentController extends BaseController {
     }
   })
   async find(@inject(AuthenticationComponent.ACCOUNT_TOKEN) accountToken: AccountToken, @inject(QueryComponent.DOCUMENT_FILTER) filter?: Filter<Document>): Promise<Document[]> {
-    let result: Promise<Document[]>;
     if (accountToken) {
-      result = this._documentService.findAuthenticated(accountToken, filter);
-    } else {
-      result = this._documentService.findPublic(filter);
-      (await result).forEach(x => x.score = 0)
-      await this._scoringService.score(result, filter.query);
-      (await result).sort((a, b) => a.score < b.score ? 1 : -1);
+      return this._documentService.findAuthenticated(accountToken, filter);
     }
-    return result;
+
+    const scoringEnabled = APPLICATION_CONFIG().scoring.url !== '' && APPLICATION_CONFIG().scoring.url != null;
+    if (scoringEnabled && filter) {
+      // Remove limit and offset/skip ... this has to be done after the scoring is applied... Yep that means we have to extract all the documents from the db :rolling_eyes:
+      const limit = filter.limit || -1;
+      const offset = filter.offset ? filter.offset : filter.skip ? filter.skip : -1;
+
+      delete filter.limit;
+      delete filter.offset;
+      delete filter.skip;
+
+      // Get documents from DB
+      let documents = await this._documentService.findPublic(filter);
+
+      const query = (filter as any).query;
+      if (query) {
+        // Initialise all scores to 0
+        documents.forEach(document => document.score = 0)
+
+        // Get scores and add them to the result
+        await this._scoringService.score(documents, query);
+
+        // Filter out all results with scores of 0
+        documents = documents.filter(document => document.score > 0);
+
+        // Sort by score desc
+        documents.sort((a, b) => a.score < b.score ? 1 : -1);
+      }
+
+      // Apply limit and offset if they were included in the original filter
+      if (documents.length > 0) {
+        if (offset >= 0 && limit >= 0) {
+          documents = documents.slice(Math.min(offset, documents.length - 1), Math.min(offset + limit, documents.length));
+
+        } else if (offset >= 0) {
+          documents = documents.slice(Math.min(offset, documents.length - 1));
+
+        } else if (limit >= 0) {
+          documents = documents.slice(0, Math.min(limit, documents.length));
+        }
+      }
+
+      return documents;
+
+    } else {
+      return this._documentService.findPublic(filter);
+    }
   }
 
   @get('/documents/{id}', {

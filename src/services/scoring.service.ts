@@ -2,22 +2,34 @@ import {bind, BindingScope} from '@loopback/core';
 import axios from 'axios';
 import {APPLICATION_CONFIG} from '../application-config';
 import {Document} from '../models';
+import {errMsg} from '../utils';
+
+interface Score {
+  itemId: string,
+  score: number,
+}
 
 @bind({scope: BindingScope.SINGLETON})
 export class ScoringService {
-  async score(docs: Promise<Document[]>, query: string) {
-    const documents = await docs;
-    const itemsId = documents.map(x => x.pid);
+  async score(documents: Document[], query: string): Promise<void> {
     try {
-      const response = (await axios.post(APPLICATION_CONFIG().scoring.url + 'score', {itemsId: itemsId, query: query})).data;
-      response.scores.forEach(element => {
-        const docIndex = documents.findIndex(x => x.pid == element.itemId);
-        if (docIndex != -1) {
-          documents[docIndex].score = element.score;
+      // Get all documents IDs
+      const documentIds = documents.map(document => document.pid);
+
+      // Get scores from PSS
+      const response = await axios.post(APPLICATION_CONFIG().scoring.url + 'score', {itemsId: documentIds, query: query});
+      const scores: Score[] = response.data.scores;
+
+      // Put all scores back into the documents
+      scores.forEach((element: Score) => {
+        const document = documents.find(document => document.pid === element.itemId);
+        if (document) {
+          document.score = element.score;
         }
       });
-    } catch (e) {
-      console.error(e);
+
+    } catch (error) {
+      throw new Error(`Failed to get scores: ${errMsg(error)}`)
     }
   }
 }
